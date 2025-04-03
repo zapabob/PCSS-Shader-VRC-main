@@ -3,7 +3,9 @@
     "references": [
         "PCSS.Core",
         "VRC.SDK3.Avatars.Components",
-        "VRC.SDKBase"
+        "VRC.SDKBase",
+        "nadena.dev.modular-avatar.core",
+        "nadena.dev.ndmf"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

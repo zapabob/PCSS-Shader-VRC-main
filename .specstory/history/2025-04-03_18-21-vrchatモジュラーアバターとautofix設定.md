@@ -3554,6 +3554,337 @@ _**Assistant**_
 
 ---
 
+3. `PCSSLightPlugin.cs`を作成します：
+
+---
+
+```diff
+  namespace PCSSShader.Core
+  {
++     [AddComponentMenu("PCSS/PCSS Light Plugin")]
+      [ExecuteInEditMode]
+      public class PCSSLightPlugin : MonoBehaviour
+```
+
+---
+
+これらの変更により：
+
+1. 重複した参照を削除
+2. 必要な参照のみを残す
+3. 適切な名前空間とクラス構造を維持
+
+エラーが解決しない場合は、以下の手順を試してください：
+
+1. Unity Editorを閉じる
+2. `Library`フォルダを削除
+3. VCCでプロジェクトを「Resolve」
+4. Unity Editorを再起動
+5. プロジェクトの「Assets」フォルダを右クリックして「Reimport All」を実行
+
+これで重複参照のエラーが解決されるはずです。
+
+---
+
+_**User**_
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(60,17): error CS0246: The type or namespace name 'MAComponent' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(61,17): error CS0246: The type or namespace name 'MAParameter' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(62,17): error CS0246: The type or namespace name 'MAMergeAnimator' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(326,22): error CS0111: Type 'PCSSLightPlugin' already defines a member called 'Update' with the same parameter types
+
+Failed to find entry-points:
+Mono.Cecil.AssemblyResolutionException: Failed to resolve assembly: 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' ---> System.Exception: Failed to resolve assembly 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' in directories: C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32\Facades
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.core.vpm-resolver\Editor\Dependencies
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Dependencies\librsync
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Integrations\VRChat Example Central\Editor
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Plugins\Harmony
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\WebGLSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Editor\VRCSDK\Plugins
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.ide.rider@3.0.26\Rider\Editor
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\VisionOSPlayer
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Plugins
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\MetroSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Dependencies\Managed
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\WindowsStandaloneSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.avatars\Runtime\VRCSDK\Plugins
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.burst@1.8.12
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.burst@1.8.12\Unity.Burst.CodeGen
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\LinuxStandaloneSupport
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\MacStandaloneSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.mono-cecil@1.11.4
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\iOSSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime\AOT
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\Managed
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.ext.nunit@1.0.6\net35\unity-custom
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\AppleTVSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.collections@2.1.4\Unity.Collections.LowLevel.ILSupport
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\AndroidPlayer
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\Managed\UnityEngine
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\ScriptAssemblies ---> Mono.Cecil.AssemblyResolutionException: Failed to resolve assembly: 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null'
+  at Mono.Cecil.BaseAssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name, Mono.Cecil.ReaderParameters parameters) [0x00105] in <853812ae52c341daaef3c62ecdb86b32>:0 
+  at zzzUnity.Burst.CodeGen.AssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x00013] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+   --- End of inner exception stack trace ---
+  at zzzUnity.Burst.CodeGen.AssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x00060] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.AssemblyLoader.Resolve (Mono.Cecil.AssemblyNameReference name) [0x0007e] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.EntryPointMethodFinder.FindEntryPoints (System.String[] rootAssemblyNames, Burst.Compiler.IL.Hashing.CacheRuntime.HashCacheAssemblyStore assemblyStore, Burst.Compiler.IL.AssemblyLoader assemblyLoader, Burst.Compiler.IL.NativeCompilerOptions options, Burst.Compiler.IL.Server.ProfileDelegate profileCallback, System.Boolean includeRootAssemblyReferences, System.Boolean splitTargets) [0x00055] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass18_1.<FindMethods>b__0 (Burst.Compiler.IL.Server.Caching.CacheManager cacheManager) [0x0005e] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass26_0`1[TResult].<RunTask>b__0 () [0x00145] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.RunTask[TResult] (Burst.Compiler.IL.Server.TargetKey target, System.String taskName, System.String[] assemblyFolders, System.Threading.CancellationToken cancellationToken, System.Func`2[T,TResult] function) [0x00131] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.FindMethods (Burst.Compiler.IL.Server.CompilerServerOptions options, Burst.Compiler.IL.Aot.AotCompilerOptions aotOptions, Burst.Compiler.IL.Server.TargetKey target, Burst.Compiler.IL.Server.Caching.CacheManager cacheManager, Burst.Compiler.IL.CompilerStatistics stats, System.Threading.CancellationToken cancellationToken) [0x00299] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass26_0`1[TResult].<RunTask>b__0 () [0x00145] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.RunTask[TResult] (Burst.Compiler.IL.Server.TargetKey target, System.String taskName, System.String[] assemblyFolders, System.Threading.CancellationToken cancellationToken, System.Func`2[T,TResult] function) [0x00131] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.Compile (Burst.Compiler.IL.Server.CompilerServerOptions options, Burst.Compiler.IL.Server.CompilationMessageStreamer streamer, System.Threading.CancellationToken cancellationToken) [0x001af] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+
+While compiling job:
+
+
+
+---
+
+_**Assistant**_
+
+主な問題が2つあります：
+
+1. `Update`メソッドが重複している
+2. Modular Avatarの参照が正しく設定されていない
+
+まず、`PCSSLightPlugin.cs`を修正して`Update`メソッドの重複を解消し、正しい参照を設定します：
+
+---
+
+```diff
+                      pcssLight.UpdateCommandBuffer();
+                  }
++ 
++                 // アバターの距離に基づいてPCSSの効果を更新
++                 UpdatePCSSEffect();
+              }
+              catch (System.Exception ex)
+              }
+          }
++ 
++         private void UpdatePCSSEffect()
++         {
++             try
++             {
++                 if (avatarDescriptor == null)
++                 {
++                     avatarDescriptor = GetAvatarDescriptor();
++                 }
++ 
++                 if (avatarDescriptor != null && preserveOnAutoFix)
++                 {
++                     int ownerID = avatarDescriptor.ownerId;
++                     float distance = Vector3.Distance(transform.position, avatarDescriptor.gameObject.transform.position);
++ 
++                     if (distance <= 10.0f)
++                     {
++                         // PCSSの効果を適用
++                         UpdateShaderProperties();
++                     }
++                     else
++                     {
++                         // PCSSの効果を徐々に減衰させる
++                         if (!shadowStrengthCache.TryGetValue(ownerID, out float shadowStrength))
++                         {
++                             shadowStrength = 1.0f;
++                         }
++ 
++                         float t = Mathf.Clamp01((distance - 10.0f) / 5.0f);
++                         shadowStrength = Mathf.Lerp(shadowStrength, 0.0f, t);
++                         shadowStrengthCache[ownerID] = shadowStrength;
++ 
++                         // キャッシュのサイズを制限
++                         if (shadowStrengthCache.Count > MaxShadowStrengthCache)
++                         {
++                             int oldestOwnerID = 0;
++                             float oldestAccessTime = float.MaxValue;
++                             foreach (var pair in shadowStrengthCache)
++                             {
++                                 if (pair.Value < oldestAccessTime)
++                                 {
++                                     oldestOwnerID = pair.Key;
++                                     oldestAccessTime = pair.Value;
++                                 }
++                             }
++                             shadowStrengthCache.Remove(oldestOwnerID);
++                         }
++ 
++                         Shader.SetGlobalFloat("_PCSShadowStrength", shadowStrength);
++                     }
++                 }
++             }
++             catch (Exception e)
++             {
++                 Debug.LogError($"Error updating PCSS effect: {e.Message}");
++             }
++         }
+  
+          private void OnEnable()
+              }
+          }
+- 
+-         private void Update()
+-         {
+-             try
+-             {
+-                 if (avatarDescriptor == null)
+-                 {
+-                     avatarDescriptor = GetAvatarDescriptor();
+-                 }
+- 
+-                 if (avatarDescriptor != null && preserveOnAutoFix)
+-                 {
+-                     int ownerID = avatarDescriptor.ownerId;
+-                     float distance = Vector3.Distance(transform.position, avatarDescriptor.gameObject.transform.position);
+- 
+-                     if (distance <= 10.0f)
+-                     {
+-                         // PCSSの効果を適用
+-                         UpdateShaderProperties();
+-                     }
+-                     else
+-                     {
+-                         // PCSSの効果を徐々に減衰させる
+-                         if (!shadowStrengthCache.TryGetValue(ownerID, out float shadowStrength))
+-                         {
+-                             shadowStrength = 1.0f;
+-                         }
+- 
+-                         float t = Mathf.Clamp01((distance - 10.0f) / 5.0f);
+-                         shadowStrength = Mathf.Lerp(shadowStrength, 0.0f, t);
+-                         shadowStrengthCache[ownerID] = shadowStrength;
+- 
+-                         // キャッシュのサイズを制限
+-                         if (shadowStrengthCache.Count > MaxShadowStrengthCache)
+-                         {
+-                             int oldestOwnerID = 0;
+-                             float oldestAccessTime = float.MaxValue;
+-                             foreach (var pair in shadowStrengthCache)
+-                             {
+-                                 if (pair.Value < oldestAccessTime)
+-                                 {
+-                                     oldestOwnerID = pair.Key;
+-                                     oldestAccessTime = pair.Value;
+-                                 }
+-                             }
+-                             shadowStrengthCache.Remove(oldestOwnerID);
+-                         }
+- 
+-                         Shader.SetGlobalFloat("_PCSShadowStrength", shadowStrength);
+-                     }
+-                 }
+-             }
+-             catch (Exception e)
+-             {
+-                 Debug.LogError($"Error updating PCSS effect: {e.Message}");
+-             }
+-         }
+  
+          private VRCAvatarDescriptor GetAvatarDescriptor()
+```
+
+---
+
+次に、`PCSS.Core.asmdef`を修正して、Modular Avatarの参照を追加します：
+
+---
+
+```diff
+          "VRC.SDK3.Avatars.Components",
+          "VRC.SDKBase",
+-         "nadena.dev.modular-avatar.core"
++         "nadena.dev.modular-avatar.core",
++         "nadena.dev.ndmf"
+      ],
+      "includePlatforms": [],
+```
+
+---
+
+これらの変更により：
+
+1. `Update`メソッドの重複を解消し、PCSSエフェクトの更新ロジックを`UpdatePCSSEffect`メソッドに分離しました。
+2. Modular Avatarの参照を正しく設定し、`nadena.dev.ndmf`も追加しました。
+
+次に、Unity Editorを再起動して、これらの変更を反映させることをお勧めします：
+
+1. Unity Editorを完全に閉じる
+2. VCC（VRChat Creator Companion）でプロジェクトを解決（Resolve）する
+3. Unity Editorを再起動する
+4. プロジェクトを開いたら、`Assets`フォルダを右クリックして「Reimport All」を選択
+
+これにより、アセンブリの参照が正しく更新され、コンパイルエラーが解消されるはずです。
+
+---
+
+_**User**_
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(60,17): error CS0246: The type or namespace name 'MAComponent' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(61,17): error CS0246: The type or namespace name 'MAParameter' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(62,17): error CS0246: The type or namespace name 'MAMergeAnimator' could not be found (are you missing a using directive or an assembly reference?)
+
+Failed to find entry-points:
+Mono.Cecil.AssemblyResolutionException: Failed to resolve assembly: 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' ---> System.Exception: Failed to resolve assembly 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' in directories: C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32\Facades
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.core.vpm-resolver\Editor\Dependencies
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Dependencies\librsync
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Integrations\VRChat Example Central\Editor
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Plugins\Harmony
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\WebGLSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Editor\VRCSDK\Plugins
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.ide.rider@3.0.26\Rider\Editor
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\VisionOSPlayer
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Plugins
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\MetroSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Dependencies\Managed
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\WindowsStandaloneSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.avatars\Runtime\VRCSDK\Plugins
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.burst@1.8.12
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.burst@1.8.12\Unity.Burst.CodeGen
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\LinuxStandaloneSupport
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\MacStandaloneSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.mono-cecil@1.11.4
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\iOSSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime\AOT
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\Managed
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.ext.nunit@1.0.6\net35\unity-custom
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\AppleTVSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.collections@2.1.4\Unity.Collections.LowLevel.ILSupport
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\AndroidPlayer
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\Managed\UnityEngine
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\ScriptAssemblies ---> Mono.Cecil.AssemblyResolutionException: Failed to resolve assembly: 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null'
+  at Mono.Cecil.BaseAssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name, Mono.Cecil.ReaderParameters parameters) [0x00105] in <853812ae52c341daaef3c62ecdb86b32>:0 
+  at zzzUnity.Burst.CodeGen.AssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x00013] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+   --- End of inner exception stack trace ---
+  at zzzUnity.Burst.CodeGen.AssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x00060] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.AssemblyLoader.Resolve (Mono.Cecil.AssemblyNameReference name) [0x0007e] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.EntryPointMethodFinder.FindEntryPoints (System.String[] rootAssemblyNames, Burst.Compiler.IL.Hashing.CacheRuntime.HashCacheAssemblyStore assemblyStore, Burst.Compiler.IL.AssemblyLoader assemblyLoader, Burst.Compiler.IL.NativeCompilerOptions options, Burst.Compiler.IL.Server.ProfileDelegate profileCallback, System.Boolean includeRootAssemblyReferences, System.Boolean splitTargets) [0x00055] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass18_1.<FindMethods>b__0 (Burst.Compiler.IL.Server.Caching.CacheManager cacheManager) [0x0005e] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass26_0`1[TResult].<RunTask>b__0 () [0x00145] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.RunTask[TResult] (Burst.Compiler.IL.Server.TargetKey target, System.String taskName, System.String[] assemblyFolders, System.Threading.CancellationToken cancellationToken, System.Func`2[T,TResult] function) [0x00131] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.FindMethods (Burst.Compiler.IL.Server.CompilerServerOptions options, Burst.Compiler.IL.Aot.AotCompilerOptions aotOptions, Burst.Compiler.IL.Server.TargetKey target, Burst.Compiler.IL.Server.Caching.CacheManager cacheManager, Burst.Compiler.IL.CompilerStatistics stats, System.Threading.CancellationToken cancellationToken) [0x00299] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass26_0`1[TResult].<RunTask>b__0 () [0x00145] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.RunTask[TResult] (Burst.Compiler.IL.Server.TargetKey target, System.String taskName, System.String[] assemblyFolders, System.Threading.CancellationToken cancellationToken, System.Func`2[T,TResult] function) [0x00131] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.Compile (Burst.Compiler.IL.Server.CompilerServerOptions options, Burst.Compiler.IL.Server.CompilationMessageStreamer streamer, System.Threading.CancellationToken cancellationToken) [0x001af] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+
+While compiling job:
+
+
+
+---
+
+_**Assistant**_
+
 
 
 ---

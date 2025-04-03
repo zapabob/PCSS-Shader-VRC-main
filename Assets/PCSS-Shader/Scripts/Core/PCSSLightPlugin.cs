@@ -120,10 +120,70 @@ namespace PCSSShader.Core
                     pcssLight.UpdateShaderValues();
                     pcssLight.UpdateCommandBuffer();
                 }
+
+                // アバターの距離に基づいてPCSSの効果を更新
+                UpdatePCSSEffect();
             }
             catch (System.Exception ex)
             {
                 Debug.LogError($"Error updating PCSS Light: {ex.Message}");
+            }
+        }
+
+        private void UpdatePCSSEffect()
+        {
+            try
+            {
+                if (avatarDescriptor == null)
+                {
+                    avatarDescriptor = GetAvatarDescriptor();
+                }
+
+                if (avatarDescriptor != null && preserveOnAutoFix)
+                {
+                    int ownerID = avatarDescriptor.ownerId;
+                    float distance = Vector3.Distance(transform.position, avatarDescriptor.gameObject.transform.position);
+
+                    if (distance <= 10.0f)
+                    {
+                        // PCSSの効果を適用
+                        UpdateShaderProperties();
+                    }
+                    else
+                    {
+                        // PCSSの効果を徐々に減衰させる
+                        if (!shadowStrengthCache.TryGetValue(ownerID, out float shadowStrength))
+                        {
+                            shadowStrength = 1.0f;
+                        }
+
+                        float t = Mathf.Clamp01((distance - 10.0f) / 5.0f);
+                        shadowStrength = Mathf.Lerp(shadowStrength, 0.0f, t);
+                        shadowStrengthCache[ownerID] = shadowStrength;
+
+                        // キャッシュのサイズを制限
+                        if (shadowStrengthCache.Count > MaxShadowStrengthCache)
+                        {
+                            int oldestOwnerID = 0;
+                            float oldestAccessTime = float.MaxValue;
+                            foreach (var pair in shadowStrengthCache)
+                            {
+                                if (pair.Value < oldestAccessTime)
+                                {
+                                    oldestOwnerID = pair.Key;
+                                    oldestAccessTime = pair.Value;
+                                }
+                            }
+                            shadowStrengthCache.Remove(oldestOwnerID);
+                        }
+
+                        Shader.SetGlobalFloat("_PCSShadowStrength", shadowStrength);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error updating PCSS effect: {e.Message}");
             }
         }
 
@@ -320,63 +380,6 @@ namespace PCSSShader.Core
             catch (Exception e)
             {
                 Debug.LogError($"Error updating command buffer: {e.Message}");
-            }
-        }
-
-        private void Update()
-        {
-            try
-            {
-                if (avatarDescriptor == null)
-                {
-                    avatarDescriptor = GetAvatarDescriptor();
-                }
-
-                if (avatarDescriptor != null && preserveOnAutoFix)
-                {
-                    int ownerID = avatarDescriptor.ownerId;
-                    float distance = Vector3.Distance(transform.position, avatarDescriptor.gameObject.transform.position);
-
-                    if (distance <= 10.0f)
-                    {
-                        // PCSSの効果を適用
-                        UpdateShaderProperties();
-                    }
-                    else
-                    {
-                        // PCSSの効果を徐々に減衰させる
-                        if (!shadowStrengthCache.TryGetValue(ownerID, out float shadowStrength))
-                        {
-                            shadowStrength = 1.0f;
-                        }
-
-                        float t = Mathf.Clamp01((distance - 10.0f) / 5.0f);
-                        shadowStrength = Mathf.Lerp(shadowStrength, 0.0f, t);
-                        shadowStrengthCache[ownerID] = shadowStrength;
-
-                        // キャッシュのサイズを制限
-                        if (shadowStrengthCache.Count > MaxShadowStrengthCache)
-                        {
-                            int oldestOwnerID = 0;
-                            float oldestAccessTime = float.MaxValue;
-                            foreach (var pair in shadowStrengthCache)
-                            {
-                                if (pair.Value < oldestAccessTime)
-                                {
-                                    oldestOwnerID = pair.Key;
-                                    oldestAccessTime = pair.Value;
-                                }
-                            }
-                            shadowStrengthCache.Remove(oldestOwnerID);
-                        }
-
-                        Shader.SetGlobalFloat("_PCSShadowStrength", shadowStrength);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error updating PCSS effect: {e.Message}");
             }
         }
 

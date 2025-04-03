@@ -3,7 +3,8 @@
     "references": [
         "VRC.SDK3.Avatars.Components",
         "VRC.SDKBase",
-        "nadena.dev.modular-avatar.core"
+        "nadena.dev.modular-avatar.core",
+        "nadena.dev.ndmf"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
