@@ -4,8 +4,7 @@ using nadena.dev.modular_avatar.core;
 using nadena.dev.ndmf;
 using VRC.SDK3.Avatars.Components;
 
-[assembly: ExportsPlugin(typeof(PCSSLightPlugin))]
-namespace PCSSShader
+namespace PCSSShader.Core
 {
     [AddComponentMenu("PCSS/PCSS Light Installer")]
     public class PCSSLightInstaller : MonoBehaviour
@@ -28,14 +27,13 @@ namespace PCSSShader
                 {
                     pcssLight.Setup();
                     var plugin = gameObject.AddComponent<PCSSLightPlugin>();
-                    VRCObjectSync.AddNativePlugin(plugin);
                     
                     // モジュラーアバター用の永続化設定
                     var maComponent = gameObject.AddComponent<MAComponent>();
                     maComponent.pathMode = VRCAvatarDescriptor.PathMode.Absolute;
                     maComponent.ignoreObjectScale = true;
 
-                    // AutoFix対策
+                    // AutoFIX対策
                     if (preserveOnAutoFix)
                     {
                         var maParam = gameObject.AddComponent<MAParameter>();

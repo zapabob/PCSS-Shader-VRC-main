@@ -2494,6 +2494,410 @@ Assets\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(59,13): error CS0246
 
 _**Assistant**_
 
+これらのエラーは主にModular AvatarとVRChat SDKの参照が正しく設定されていないことが原因です。以下の手順で解決しましょう：
+
+1. まず、アセンブリ定義ファイルを作成・修正する必要があります：
+
+---
+
+```diff
+      "name": "PCSS.Core",
+      "references": [
++         "VRC.SDK3.Avatars.Components",
++         "VRC.SDKBase",
+          "nadena.dev.modular-avatar.core",
+-         "nadena.dev.ndmf",
+-         "VRC.SDK3.Avatars.Components",
+-         "VRC.SDKBase"
++         "nadena.dev.ndmf"
+      ],
+      "includePlatforms": [],
+```
+
+---
+
+2. 次に、`PCSSLightHandler.cs`を`PCSSLightInstaller.cs`に名前を変更し、正しいディレクトリに移動します：
+
+---
+
+```bash
+mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item -Force "PCSS-Shader-VRC-main/PCSSLightHandler.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLightInstaller.cs"
+```
+
+```
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -p "Assets/PCSS-Shader/Scripts" "Assets/PCSS-Shader/
+Shaders" "Assets/PCSS-Shader/Utils"
+mkdir : 引数 'Assets/PCSS-Shader/Shaders' を受け入れる位置指定パラメーターが見つかりません。
+発生場所 行:1 文字:1
++ mkdir -p "Assets/PCSS-Shader/Scripts" "Assets/PCSS-Shader/Shaders" "A ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + FullyQualifiedErrorId : PositionalParameterNotFound,mkdir
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Scripts\Core", "Assets\PC
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Scripts\Core", "Assets\PC
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Scripts\Core", "Assets\PC
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Scripts\Core", "Assets\PC
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Scripts\Core", "Assets\PC
+
+
+    ディレクトリ: C:\Users\downl\Downloads\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2025/04/04      4:19                Core
+d-----        2025/04/04      4:19                Utils
+
+
+    ディレクトリ: C:\Users\downl\Downloads\PCSS-Shader-VRC-main\Assets\PCSS-Shader
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2025/04/04      4:19                Shaders
+
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Path "PCSSLightHandler.cs" -Destination "Assets
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Path "PCSSLightHandler.cs" -Destination "Assets
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Path "PCSSLightHandler.cs" -Destination "Assets
+\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs" -Force; Move-Item -Path "poissontools.cs" -Destination "Ass
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Path "PCSSLightHandler.cs" -Destination "Assets
+\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs" -Force; Move-Item -Path "poissontools.cs" -Destination "Ass
+Move-Item : パス 'C:\Users\downl\Downloads\PCSS-Shader-VRC-main\PCSSLightHandler.cs' が存在しないため検出でs
+きません。
+発生場所 行:1 文字:1
++ Move-Item -Path "PCSSLightHandler.cs" -Destination "Assets\PCSS-Shade ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:\Users\downl\...LightHandler.cs:String) [Move-Item], Item 
+   NotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.MoveItemCommand
+
+Move-Item : パス 'C:\Users\downl\Downloads\PCSS-Shader-VRC-main\poissontools.cs' が存在しないため検出できま
+せん。
+発生場所 行:1 文字:116
++ ... cs" -Force; Move-Item -Path "poissontools.cs" -Destination "Assets\PC ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:\Users\downl\...poissontools.cs:String) [Move-Item], Item
+
+   NotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.MoveItemCommand
+
+Move-Item : パス 'C:\Users\downl\Downloads\PCSS-Shader-VRC-main\setcameradepth.cs' が存在しないため検出でき 
+ません。
+発生場所 行:1 文字:222
++ ... cs" -Force; Move-Item -Path "setcameradepth.cs" -Destination "Assets\ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:\Users\downl\...tcameradepth.cs:String) [Move-Item], Item
+
+   NotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.MoveItemCommand
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Samples", "Assets\PCSS-Sh
+ader\Prefabs"
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2025/04/04      4:22                Samples
+d-----        2025/04/04      4:22                Prefabs
+
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+
+```
+
+---
+
+3. VRChat Creator Companion（VCC）で以下のパッケージがインストールされていることを確認してください：
+
+- VRChat SDK3 Avatars (>=3.4.0)
+- Modular Avatar (>=1.8.0)
+- NDMF (>=1.2.0)
+
+4. プロジェクトを再読み込みするために、以下の手順を実行してください：
+
+1. Unity Editorを閉じる
+2. VCCでプロジェクトを選択し、「Resolve」をクリック
+3. Unity Editorを再起動
+
+5. `setcameradepth.cs`の警告については、以下のように修正します：
+
+---
+
+```diff
+- 
++ using UnityEngine;
++ 
++ public class SetCameraDepthMode : MonoBehaviour
++ {
++     [SerializeField]
++     private new bool enabled = true;
++ 
++     // ... existing code ...
++ } 
+```
+
+---
+
+これらの変更により、コンパイルエラーが解決されるはずです。エラーが続く場合は、以下を確認してください：
+
+1. VCCで正しいバージョンのパッケージがインストールされているか
+2. アセンブリ定義ファイルが正しい場所にあるか
+3. スクリプトファイルが正しいディレクトリ構造に配置されているか
+
+また、`package.json`の依存関係が正しく設定されていることも確認してください。
+
+エラーが解決しない場合は、以下の追加の手順を試してください：
+
+1. Unity Package Managerを開く（Window > Package Manager）
+2. 「Packages: In Project」を選択
+3. 各パッケージ（VRChat SDK、Modular Avatar、NDMF）が正しくインストールされているか確認
+4. 必要に応じて「Reimport All」を実行（Assets > Reimport All）
+
+これでコンパイルエラーが解決するはずです。
+
+---
+
+_**User**_
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs(7,33): error CS0246: The type or namespace name 'PCSSLightPlugin' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs(79,36): error CS0246: The type or namespace name 'SDKUnityNativePluginBase' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs(81,17): error CS0246: The type or namespace name 'PCSSLight' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLight.cs(6,7): error CS0246: The type or namespace name 'nadena' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(6,7): error CS0246: The type or namespace name 'nadena' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\setcameradepth.cs(8,17): warning CS0108: 'SetCameraDepthMode.enabled' hides inherited member 'Behaviour.enabled'. Use the new keyword if hiding was intended.
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(57,13): error CS0246: The type or namespace name 'MAComponent' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(58,13): error CS0246: The type or namespace name 'MAParameter' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(59,13): error CS0246: The type or namespace name 'MAMergeAnimator' could not be found (are you missing a using directive or an assembly reference?)
+
+Failed to find entry-points:
+Mono.Cecil.AssemblyResolutionException: Failed to resolve assembly: 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' ---> System.Exception: Failed to resolve assembly 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' in directories: C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32\Facades
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.core.vpm-resolver\Editor\Dependencies
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Dependencies\librsync
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Integrations\VRChat Example Central\Editor
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Plugins\Harmony
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\WebGLSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Editor\VRCSDK\Plugins
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.ide.rider@3.0.26\Rider\Editor
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\VisionOSPlayer
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Plugins
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\MetroSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Dependencies\Managed
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\WindowsStandaloneSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.avatars\Runtime\VRCSDK\Plugins
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.burst@1.8.12
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.burst@1.8.12\Unity.Burst.CodeGen
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\LinuxStandaloneSupport
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\MacStandaloneSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.mono-cecil@1.11.4
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\iOSSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime\AOT
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\Managed
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.ext.nunit@1.0.6\net35\unity-custom
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\AppleTVSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.collections@2.1.4\Unity.Collections.LowLevel.ILSupport
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\AndroidPlayer
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\Managed\UnityEngine
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\ScriptAssemblies ---> Mono.Cecil.AssemblyResolutionException: Failed to resolve assembly: 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null'
+  at Mono.Cecil.BaseAssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name, Mono.Cecil.ReaderParameters parameters) [0x00105] in <853812ae52c341daaef3c62ecdb86b32>:0 
+  at zzzUnity.Burst.CodeGen.AssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x00013] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+   --- End of inner exception stack trace ---
+  at zzzUnity.Burst.CodeGen.AssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x00060] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.AssemblyLoader.Resolve (Mono.Cecil.AssemblyNameReference name) [0x0007e] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.EntryPointMethodFinder.FindEntryPoints (System.String[] rootAssemblyNames, Burst.Compiler.IL.Hashing.CacheRuntime.HashCacheAssemblyStore assemblyStore, Burst.Compiler.IL.AssemblyLoader assemblyLoader, Burst.Compiler.IL.NativeCompilerOptions options, Burst.Compiler.IL.Server.ProfileDelegate profileCallback, System.Boolean includeRootAssemblyReferences, System.Boolean splitTargets) [0x00055] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass18_1.<FindMethods>b__0 (Burst.Compiler.IL.Server.Caching.CacheManager cacheManager) [0x0005e] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass26_0`1[TResult].<RunTask>b__0 () [0x00145] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.RunTask[TResult] (Burst.Compiler.IL.Server.TargetKey target, System.String taskName, System.String[] assemblyFolders, System.Threading.CancellationToken cancellationToken, System.Func`2[T,TResult] function) [0x00131] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.FindMethods (Burst.Compiler.IL.Server.CompilerServerOptions options, Burst.Compiler.IL.Aot.AotCompilerOptions aotOptions, Burst.Compiler.IL.Server.TargetKey target, Burst.Compiler.IL.Server.Caching.CacheManager cacheManager, Burst.Compiler.IL.CompilerStatistics stats, System.Threading.CancellationToken cancellationToken) [0x00299] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass26_0`1[TResult].<RunTask>b__0 () [0x00145] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.RunTask[TResult] (Burst.Compiler.IL.Server.TargetKey target, System.String taskName, System.String[] assemblyFolders, System.Threading.CancellationToken cancellationToken, System.Func`2[T,TResult] function) [0x00131] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.Compile (Burst.Compiler.IL.Server.CompilerServerOptions options, Burst.Compiler.IL.Server.CompilationMessageStreamer streamer, System.Threading.CancellationToken cancellationToken) [0x001af] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+
+While compiling job:
+
+
+
+---
+
+_**Assistant**_
+
+エラーの主な原因は以下の2点です：
+
+1. アセンブリ参照の問題
+2. ファイル構造の不整合
+
+順番に解決していきましょう：
+
+1. まず、`PCSS.Utils.asmdef`を作成します：
+
+---
+
+```diff
+      "name": "PCSS.Utils",
+      "references": [
+-         "PCSS.Core"
++         "PCSS.Core",
++         "VRC.SDK3.Avatars.Components",
++         "VRC.SDKBase"
+      ],
+      "includePlatforms": [],
+```
+
+---
+
+2. `PCSSLight.cs`と`PCSSLightPlugin.cs`を正しい場所に移動します：
+
+---
+
+```bash
+Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLight.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs"; Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLightPlugin.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLightPlugin.cs"
+```
+
+```
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -p "Assets/PCSS-Shader/Scripts" "Assets/PCSS-Shader/
+Shaders" "Assets/PCSS-Shader/Utils"
+mkdir : 引数 'Assets/PCSS-Shader/Shaders' を受け入れる位置指定パラメーターが見つかりません。
+発生場所 行:1 文字:1
++ mkdir -p "Assets/PCSS-Shader/Scripts" "Assets/PCSS-Shader/Shaders" "A ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + FullyQualifiedErrorId : PositionalParameterNotFound,mkdir
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir "Assets\PCSS-Shader\Scripts" "Assets\PCSS-Shader\Sha
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Scripts\Core", "Assets\PC
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Scripts\Core", "Assets\PC
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Scripts\Core", "Assets\PC
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Scripts\Core", "Assets\PC
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Scripts\Core", "Assets\PC
+
+
+    ディレクトリ: C:\Users\downl\Downloads\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2025/04/04      4:19                Core
+d-----        2025/04/04      4:19                Utils
+
+
+    ディレクトリ: C:\Users\downl\Downloads\PCSS-Shader-VRC-main\Assets\PCSS-Shader
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2025/04/04      4:19                Shaders
+
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Path "PCSSLightHandler.cs" -Destination "Assets
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Path "PCSSLightHandler.cs" -Destination "Assets
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Path "PCSSLightHandler.cs" -Destination "Assets
+\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs" -Force; Move-Item -Path "poissontools.cs" -Destination "Ass
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Path "PCSSLightHandler.cs" -Destination "Assets
+\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs" -Force; Move-Item -Path "poissontools.cs" -Destination "Ass
+Move-Item : パス 'C:\Users\downl\Downloads\PCSS-Shader-VRC-main\PCSSLightHandler.cs' が存在しないため検出でs
+きません。
+発生場所 行:1 文字:1
++ Move-Item -Path "PCSSLightHandler.cs" -Destination "Assets\PCSS-Shade ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:\Users\downl\...LightHandler.cs:String) [Move-Item], Item 
+   NotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.MoveItemCommand
+
+Move-Item : パス 'C:\Users\downl\Downloads\PCSS-Shader-VRC-main\poissontools.cs' が存在しないため検出できま
+せん。
+発生場所 行:1 文字:116
++ ... cs" -Force; Move-Item -Path "poissontools.cs" -Destination "Assets\PC ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:\Users\downl\...poissontools.cs:String) [Move-Item], Item
+
+   NotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.MoveItemCommand
+
+Move-Item : パス 'C:\Users\downl\Downloads\PCSS-Shader-VRC-main\setcameradepth.cs' が存在しないため検出でき 
+ません。
+発生場所 行:1 文字:222
++ ... cs" -Force; Move-Item -Path "setcameradepth.cs" -Destination "Assets\ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:\Users\downl\...tcameradepth.cs:String) [Move-Item], Item
+
+   NotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.MoveItemCommand
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Samples", "Assets\PCSS-Sh
+ader\Prefabs"
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2025/04/04      4:22                Samples
+d-----        2025/04/04      4:22                Prefabs
+
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Scripts/Core" ; Move-Item
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+ght.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs"; Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+ght.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs"; Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+ght.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs"; Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+ght.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs"; Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+ght.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs"; Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+ght.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs"; Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+ght.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs"; Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+ght.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs"; Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+ght.cs" "Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs"; Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-VRC-main/PCSS-for-VRC/PCSSLi
+
+```
+
+---
+
+3. 次に、`PCSSLightInstaller.cs`の内容を修正します：
+
+---
+
+Cancelled
+
+---
+
 
 
 ---

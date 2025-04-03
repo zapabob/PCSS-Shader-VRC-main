@@ -1,7 +1,9 @@
 {
     "name": "PCSS.Utils",
     "references": [
-        "PCSS.Core"
+        "PCSS.Core",
+        "VRC.SDK3.Avatars.Components",
+        "VRC.SDKBase"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
