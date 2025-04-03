@@ -3433,6 +3433,127 @@ Remove-Item : パス 'C:\Users\downl\Downloads\PCSS-Shader-VRC-main\Assets\PCSS-
 
 ---
 
+3. `PCSSLightInstaller.cs`を修正します：
+
+---
+
+```diff
+  using VRC.SDKBase;
+  using nadena.dev.modular_avatar.core;
+- using nadena.dev.ndmf;
+  using VRC.SDK3.Avatars.Components;
+  
+              try
+              {
+-                 var pcssLight = GetComponent<PCSSLight>();
+-                 if (pcssLight)
++                 var pcssLight = gameObject.AddComponent<PCSSLight>();
++                 if (pcssLight != null)
+                  {
+                      pcssLight.Setup();
++                     var plugin = gameObject.AddComponent<PCSSLightPlugin>();
+                      
+                      // モジュラーアバター用の永続化設定
+                      }
+                  }
+-                 else
+-                 {
+-                     Debug.LogError("PCSSLight component not found on the game object.");
+-                 }
+              }
+              catch (System.Exception ex)
+```
+
+---
+
+4. lilToonのシェーダーエラーを解決するために、VCCでlilToonパッケージをインストールしてください。
+
+5. プロジェクトをクリーンアップするために：
+
+1. Unity Editorを閉じる
+2. `Library`フォルダを削除
+3. VCCでプロジェクトを「Resolve」
+4. Unity Editorを再起動
+
+これらの変更により：
+
+1. アセンブリの重複が解消される
+2. 必要なコンポーネントが正しく参照される
+3. シェーダーのエラーが解決される（lilToonのインストール後）
+
+エラーが解決しない場合は、以下も試してください：
+
+1. プロジェクトの「Assets」フォルダを右クリックして「Reimport All」を実行
+2. Edit > Project Settings > Player で「Api Compatibility Level」を「.NET Standard 2.1」に設定
+3. VCCで依存パッケージ（VRChat SDK、Modular Avatar、NDMF）を再インストール
+
+---
+
+_**User**_
+
+Assembly has duplicate references: nadena.dev.modular-avatar.core (Assets/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Scripts/Core/PCSS.Core.asmdef)
+
+
+
+---
+
+_**Assistant**_
+
+重複した参照を解決するために、アセンブリ定義ファイルを整理します：
+
+1. まず、重複しているディレクトリを確認して削除します：
+
+---
+
+<details>
+            <summary>Listed current directory • **5** results</summary>
+        
+| Name |
+|-------|
+| 📁 `.git` |
+| 📁 `Assets` |
+| 📁 `.specstory` |
+| 📄 `.cursorignore` |
+| 📁 `.cursor` |
+
+</details>
+
+---
+
+<details>
+            <summary>Listed directory Assets • **1** results</summary>
+        
+| Name |
+|-------|
+| 📁 `PCSS-Shader` |
+
+</details>
+
+---
+
+2. `PCSS.Core.asmdef`を修正します：
+
+---
+
+```diff
+      "name": "PCSS.Core",
+      "references": [
+-         "GUID:f51ebe6a0ceec4240a699833d6309b23",
+-         "GUID:5718fb738711cd34ea54e9553040911d",
+-         "GUID:fc900867c0f47cd49b6e2ae4ef907300",
+-         "GUID:6490804aa441dfe4b88eb56cccbdf081",
+-         "GUID:6055be8ebefd69e48b49212b09b47b2f",
+          "VRC.SDK3.Avatars.Components",
+          "VRC.SDKBase",
+-         "nadena.dev.modular-avatar.core",
+-         "nadena.dev.ndmf"
++         "nadena.dev.modular-avatar.core"
+      ],
+      "includePlatforms": [],
+```
+
+---
+
 
 
 ---

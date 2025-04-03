@@ -13,6 +13,7 @@ using UnityEditor;
 
 namespace PCSSShader.Core
 {
+    [AddComponentMenu("PCSS/PCSS Light Plugin")]
     [ExecuteInEditMode]
     public class PCSSLightPlugin : MonoBehaviour
     {
