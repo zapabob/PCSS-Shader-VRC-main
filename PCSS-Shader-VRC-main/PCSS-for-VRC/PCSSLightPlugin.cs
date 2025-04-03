@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using System;
 using System.Collections.Generic;
+using nadena.dev.modular_avatar.core;
+using VRC.SDK3.Avatars.Components;
+using VRC.SDKBase;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -11,6 +14,11 @@ using UnityEditor;
 [ExecuteInEditMode]
 public class PCSSLightPlugin : MonoBehaviour
 {
+    [Header("モジュラーアバター設定")]
+    [SerializeField] private bool preserveOnAutoFix = true;
+    [SerializeField] private bool syncWithMirror = true;
+
+    [Header("PCSS設定")]
     public int resolution = 4096;
     public bool customShadowResolution = false;
 
@@ -38,14 +46,17 @@ public class PCSSLightPlugin : MonoBehaviour
 
     public bool supportOrthographicProjection;
 
-    public RenderTexture shadowRenderTexture;
-    public RenderTextureFormat format = RenderTextureFormat.RFloat;
-    public FilterMode filterMode = FilterMode.Bilinear;
+    private RenderTexture shadowRenderTexture;
+    private RenderTextureFormat format = RenderTextureFormat.RFloat;
+    private FilterMode filterMode = FilterMode.Bilinear;
 
     private int shadowmapPropID;
     private CommandBuffer copyShadowBuffer;
     private Light lightComponent;
     private VRCAvatarDescriptor avatarDescriptor;
+    private MAComponent maComponent;
+    private MAParameter maParameter;
+    private MAMergeAnimator maMergeAnimator;
 
     private readonly Dictionary<int, float> shadowStrengthCache = new Dictionary<int, float>();
     private const int MaxShadowStrengthCache = 1000;
@@ -55,6 +66,7 @@ public class PCSSLightPlugin : MonoBehaviour
         if (Application.isPlaying)
         {
             SetupLight();
+            SetupModularAvatar();
         }
     }
 
@@ -72,9 +84,57 @@ public class PCSSLightPlugin : MonoBehaviour
         if (!Application.isPlaying)
         {
             SetupLight();
+            SetupModularAvatar();
+        }
+
+        // コンポーネントの依存関係チェック
+        var avatar = GetComponent<VRCAvatarDescriptor>();
+        if (avatar == null)
+        {
+            Debug.LogWarning("VRCAvatarDescriptorが見つかりません。アバターのルートに配置してください。");
         }
     }
     #endif
+
+    private void SetupModularAvatar()
+    {
+        try
+        {
+            // モジュラーアバター用の永続化設定
+            if (maComponent == null)
+            {
+                maComponent = gameObject.AddComponent<MAComponent>();
+                maComponent.pathMode = VRCAvatarDescriptor.PathMode.Absolute;
+                maComponent.ignoreObjectScale = true;
+            }
+
+            // AutoFix対策
+            if (preserveOnAutoFix)
+            {
+                if (maParameter == null)
+                {
+                    maParameter = gameObject.AddComponent<MAParameter>();
+                    maParameter.nameOrPrefix = "PCSS_Light_Enabled";
+                    maParameter.syncType = VRCExpressionParameters.ValueType.Bool;
+                    maParameter.defaultValue = 1;
+                    maParameter.saved = true;
+                }
+
+                // ミラー同期対策
+                if (syncWithMirror && maMergeAnimator == null)
+                {
+                    maMergeAnimator = gameObject.AddComponent<MAMergeAnimator>();
+                    maMergeAnimator.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
+                    maMergeAnimator.pathMode = VRCAvatarDescriptor.PathMode.Absolute;
+                    maMergeAnimator.deleteAttachedAnimator = true;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error setting up Modular Avatar components: {e.Message}");
+        }
+    }
 
     private void SetupLight()
     {
@@ -206,7 +266,7 @@ public class PCSSLightPlugin : MonoBehaviour
                 avatarDescriptor = GetAvatarDescriptor();
             }
 
-            if (avatarDescriptor != null)
+            if (avatarDescriptor != null && preserveOnAutoFix)
             {
                 int ownerID = avatarDescriptor.ownerId;
                 float distance = Vector3.Distance(transform.position, avatarDescriptor.gameObject.transform.position);
