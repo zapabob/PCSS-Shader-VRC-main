@@ -2305,6 +2305,195 @@ _**User**_
 
 _**Assistant**_
 
+はい、Unityのベストプラクティスに従って、さらにファイル構造を整理していきます。
+
+1. まず、シェーダー関連のファイルを整理します：
+
+---
+
+```diff
+- 
++ {
++     "name": "PCSS.Shaders",
++     "references": [
++         "PCSS.Core",
++         "PCSS.Utils"
++     ],
++     "includePlatforms": [],
++     "excludePlatforms": [],
++     "allowUnsafeCode": false,
++     "overrideReferences": false,
++     "precompiledReferences": [],
++     "autoReferenced": true,
++     "defineConstraints": [],
++     "versionDefines": [],
++     "noEngineReferences": false
++ } 
+```
+
+---
+
+2. サンプルシーンとプレハブを追加するためのフォルダを作成：
+
+---
+
+```bash
+mkdir -Force "Assets\PCSS-Shader\Samples", "Assets\PCSS-Shader\Prefabs"
+```
+
+```
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets\PCSS-Shader\Samples", "Assets\PCSS-Sh
+ader\Prefabs"
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2025/04/04      4:22                Samples
+d-----        2025/04/04      4:22                Prefabs
+
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main>
+```
+
+---
+
+3. パッケージ情報を追加：
+
+---
+
+```diff
+- 
++ {
++     "name": "com.vrchat.pcss-shader",
++     "version": "1.0.0",
++     "displayName": "PCSS Shader for VRChat",
++     "description": "High-quality PCSS shadow shader for VRChat avatars with Modular Avatar support",
++     "unity": "2019.4.31f1",
++     "author": {
++         "name": "Your Name",
++         "url": "https://github.com/yourusername/PCSS-Shader-VRC"
++     },
++     "dependencies": {
++         "com.vrchat.avatars": "3.4.0",
++         "nadena.dev.modular-avatar": "1.8.0",
++         "nadena.dev.ndmf": "1.2.0"
++     },
++     "vpmDependencies": {
++         "com.vrchat.avatars": ">=3.4.0",
++         "nadena.dev.modular-avatar": ">=1.8.0",
++         "nadena.dev.ndmf": ">=1.2.0"
++     }
++ } 
+```
+
+---
+
+4. 最後に、README.mdを更新して新しい構造を反映させます：
+
+---
+
+```diff
+  MIT License
+  
+- ## プロジェクト構造 / Project Structure
++ ## 詳細なプロジェクト構造 / Detailed Project Structure
+  
+  ```
+      ├── Scripts/
+      │   ├── Core/
+-     │   │   ├── PCSSLightPlugin.cs      # PCSSの中核機能
+-     │   │   └── PCSSLightInstaller.cs   # インストーラー
++     │   │   ├── PCSSLightPlugin.cs        # PCSS中核機能
++     │   │   ├── PCSSLightInstaller.cs     # インストーラー
++     │   │   └── PCSS.Core.asmdef         # コア機能のアセンブリ定義
+      │   └── Utils/
+-     │       ├── PoissonTools.cs         # ポアソンディスク計算
+-     │       └── SetCameraDepth.cs       # カメラ深度設定
++     │       ├── PoissonTools.cs          # ポアソンディスク計算
++     │       ├── SetCameraDepth.cs        # カメラ深度設定
++     │       └── PCSS.Utils.asmdef        # ユーティリティのアセンブリ定義
+      ├── Shaders/
+-     │   └── PCSSLiltoonShader.shader    # PCSSシェーダー
+-     └── README.md                       # ドキュメント
++     │   ├── PCSSLiltoonShader.shader    # PCSSシェーダー
++     │   └── PCSS.Shaders.asmdef         # シェーダーのアセンブリ定義
++     ├── Samples/                         # サンプルシーンとデモ
++     ├── Prefabs/                         # プレハブ
++     ├── package.json                     # パッケージ情報
++     └── README.md                        # ドキュメント
+  ```
+  
+- ### ファイルの説明 / File Description
+- 
+- - `PCSSLightPlugin.cs`: PCSSシャドウの中核機能を実装
+- - `PCSSLightInstaller.cs`: アバターへのPCSS機能の追加を管理
+- - `PoissonTools.cs`: シャドウのサンプリング最適化
+- - `SetCameraDepth.cs`: カメラの深度設定を管理
+- - `PCSSLiltoonShader.shader`: lilToon対応のPCSSシェーダー
++ ### アセンブリ構造 / Assembly Structure
++ 
++ - `PCSS.Core`: メインの機能とModular Avatar連携
++ - `PCSS.Utils`: ユーティリティ機能（PCSS.Coreに依存）
++ - `PCSS.Shaders`: シェーダー関連（PCSS.CoreとPCSS.Utilsに依存）
++ 
++ ### パッケージ依存関係 / Package Dependencies
++ 
++ - VRChat SDK3 Avatars (>=3.4.0)
++ - Modular Avatar (>=1.8.0)
++ - NDMF (>=1.2.0)
+```
+
+---
+
+この新しい構造により：
+
+1. 明確な依存関係
+- アセンブリ定義による適切な参照管理
+- パッケージ依存関係の明示
+- バージョン要件の明確化
+
+2. モジュール化
+- コア機能の分離
+- ユーティリティの独立
+- シェーダーコードの分離
+
+3. 拡張性
+- サンプルとデモの追加が容易
+- プレハブの再利用が簡単
+- パッケージとしての配布が可能
+
+この構造は[Unity Project Structure](https://samuel-asher-rivello.medium.com/unity-project-structure-a694792cefed)のベストプラクティスに従っており、[Anchorpoint's Unity Folder Structure Guide](https://www.anchorpoint.app/blog/unity-folder-structure)で推奨される高度な構造を採用しています。
+
+---
+
+_**User**_
+
+Assets\PCSS-Shader-VRC-main\PCSSLightHandler.cs(7,12): error CS0246: The type or namespace name 'ExportsPluginAttribute' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSSLightHandler.cs(7,12): error CS0246: The type or namespace name 'ExportsPlugin' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLight.cs(6,7): error CS0246: The type or namespace name 'nadena' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(6,7): error CS0246: The type or namespace name 'nadena' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSSLightHandler.cs(3,7): error CS0246: The type or namespace name 'nadena' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSSLightHandler.cs(4,7): error CS0246: The type or namespace name 'nadena' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSSLightHandler.cs(79,36): error CS0246: The type or namespace name 'SDKUnityNativePluginBase' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\setcameradepth.cs(8,17): warning CS0108: 'SetCameraDepthMode.enabled' hides inherited member 'Behaviour.enabled'. Use the new keyword if hiding was intended.
+
+Assets\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(57,13): error CS0246: The type or namespace name 'MAComponent' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(58,13): error CS0246: The type or namespace name 'MAParameter' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(59,13): error CS0246: The type or namespace name 'MAMergeAnimator' could not be found (are you missing a using directive or an assembly reference?)
+
+
+
+---
+
+_**Assistant**_
+
 
 
 ---
