@@ -1,0 +1,21 @@
+{
+    "name": "com.vrchat.pcss-shader",
+    "version": "1.0.0",
+    "displayName": "PCSS Shader for VRChat",
+    "description": "High-quality PCSS shadow shader for VRChat avatars with Modular Avatar support",
+    "unity": "2019.4.31f1",
+    "author": {
+        "name": "Your Name",
+        "url": "https://github.com/yourusername/PCSS-Shader-VRC"
+    },
+    "dependencies": {
+        "com.vrchat.avatars": "3.4.0",
+        "nadena.dev.modular-avatar": "1.8.0",
+        "nadena.dev.ndmf": "1.2.0"
+    },
+    "vpmDependencies": {
+        "com.vrchat.avatars": ">=3.4.0",
+        "nadena.dev.modular-avatar": ">=1.8.0",
+        "nadena.dev.ndmf": ">=1.2.0"
+    }
+} 
