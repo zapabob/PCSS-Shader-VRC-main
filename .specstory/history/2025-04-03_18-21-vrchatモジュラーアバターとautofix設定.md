@@ -2894,7 +2894,542 @@ PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Move-Item -Force "PCSS-Shader-
 
 ---
 
-Cancelled
+```diff
+  using VRC.SDK3.Avatars.Components;
+  
+- [assembly: ExportsPlugin(typeof(PCSSLightPlugin))]
+- namespace PCSSShader
++ namespace PCSSShader.Core
+  {
+      [AddComponentMenu("PCSS/PCSS Light Installer")]
+                      pcssLight.Setup();
+                      var plugin = gameObject.AddComponent<PCSSLightPlugin>();
+-                     VRCObjectSync.AddNativePlugin(plugin);
+                      
+                      // モジュラーアバター用の永続化設定
+                      maComponent.ignoreObjectScale = true;
+  
+-                     // AutoFix対策
++                     // AutoFIX対策
+                      if (preserveOnAutoFix)
+                      {
+```
+
+---
+
+4. 最後に、Unity Editorで以下の手順を実行してください：
+
+1. メニューから「Edit > Project Settings」を開く
+2. 「Player」設定を選択
+3. 「Other Settings」セクションを展開
+4. 「Configuration」で「Api Compatibility Level」を「.NET Standard 2.1」に設定
+
+これらの変更により、以下の問題が解決されるはずです：
+
+1. アセンブリ参照の問題（`PCSS.Utils`が見つからない）
+2. 名前空間の問題（`nadena`が見つからない）
+3. クラス参照の問題（`PCSSLightPlugin`、`SDKUnityNativePluginBase`、`PCSSLight`が見つからない）
+4. Modular Avatarコンポーネントの問題（`MAComponent`、`MAParameter`、`MAMergeAnimator`が見つからない）
+
+エラーが解決しない場合は、以下も試してください：
+
+1. Unity Editorを再起動
+2. VCCでプロジェクトを「Resolve」
+3. プロジェクトの「Assets」フォルダを右クリックして「Reimport All」を実行
+
+これでコンパイルエラーが解決するはずです。
+
+---
+
+_**User**_
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs(7,33): error CS0246: The type or namespace name 'PCSSLightPlugin' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs(79,36): error CS0246: The type or namespace name 'SDKUnityNativePluginBase' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs(81,17): error CS0246: The type or namespace name 'PCSSLight' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLight.cs(6,7): error CS0246: The type or namespace name 'nadena' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(6,7): error CS0246: The type or namespace name 'nadena' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\setcameradepth.cs(8,17): warning CS0108: 'SetCameraDepthMode.enabled' hides inherited member 'Behaviour.enabled'. Use the new keyword if hiding was intended.
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(57,13): error CS0246: The type or namespace name 'MAComponent' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(58,13): error CS0246: The type or namespace name 'MAParameter' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\PCSS-Shader-VRC-main\PCSS-for-VRC\PCSSLightPlugin.cs(59,13): error CS0246: The type or namespace name 'MAMergeAnimator' could not be found (are you missing a using directive or an assembly reference?)
+
+Packages/com.vrchat.avatars/Editor/VRCSDK/SDK3A/Resources/VRCSdkAvatarBuilderContentInfoStyles.uss (line 18): warning: Expected (<length-percentage>) but found '12'
+    font-size: 12 -> Property expects a unit. Did you forget to add px or %?
+
+Packages/com.vrchat.avatars/Editor/VRCSDK/SDK3A/Elements/AvatarSelector/Resources/AvatarSelectorStyles.uss (line 6): warning: Expected (<length-percentage>) but found '12'
+    font-size: 12 -> Property expects a unit. Did you forget to add px or %?
+
+Shader error in 'lilToon/PCSS': Couldn't open include file 'liltoon.hlsl'. at line 106
+
+Shader warning in 'lilToon/PCSS': lilToon/PCSS shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
+
+
+Shader warning in 'lilToon/PCSS': Both vertex and fragment programs must be present in a shader snippet. Excluding it from compilation. at line 213
+
+Unable to find a font file with the specified Family Name [Noto Sans CJK JP] and Style [].
+UnityEngine.TextCore.Text.FontAsset:CreateFontAsset (string,string,int)
+nadena.dev.ndmf.localization.LanguagePrefs:TryLoadFontForLanguage (string) (at ./Packages/nadena.dev.ndmf/Editor/UI/Localization/LanguagePrefs.cs:281)
+nadena.dev.ndmf.localization.LanguagePrefs:MaybeRefreshActiveFont () (at ./Packages/nadena.dev.ndmf/Editor/UI/Localization/LanguagePrefs.cs:261)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+Unable to find a font file with the specified Family Name [Noto Sans CJK JP] and Style [].
+UnityEngine.TextCore.Text.FontAsset:CreateFontAsset (string,string,int)
+nadena.dev.ndmf.localization.LanguagePrefs:TryLoadFontForLanguage (string) (at ./Packages/nadena.dev.ndmf/Editor/UI/Localization/LanguagePrefs.cs:281)
+nadena.dev.ndmf.localization.LanguagePrefs:MaybeRefreshActiveFont () (at ./Packages/nadena.dev.ndmf/Editor/UI/Localization/LanguagePrefs.cs:261)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+
+
+---
+
+_**Assistant**_
+
+エラーを整理して解決していきましょう。主なエラーは以下の3つのカテゴリーに分類されます：
+
+1. アセンブリ参照の問題
+2. シェーダーの問題
+3. フォントの問題
+
+まず、アセンブリ参照の問題を解決します：
+
+1. `PCSS.Core.asmdef`を作成します：
+
+---
+
+```diff
+      "name": "PCSS.Core",
+      "references": [
++         "GUID:f51ebe6a0ceec4240a699833d6309b23",
++         "GUID:5718fb738711cd34ea54e9553040911d",
++         "GUID:fc900867c0f47cd49b6e2ae4ef907300",
++         "GUID:6490804aa441dfe4b88eb56cccbdf081",
++         "GUID:6055be8ebefd69e48b49212b09b47b2f",
+          "VRC.SDK3.Avatars.Components",
+          "VRC.SDKBase",
+```
+
+---
+
+2. `PCSSLightPlugin`クラスを別ファイルに分離します：
+
+---
+
+```diff
+  #endif
+  
++ namespace PCSSShader.Core
++ {
+      [ExecuteInEditMode]
+      public class PCSSLightPlugin : MonoBehaviour
+          private readonly Dictionary<int, float> shadowStrengthCache = new Dictionary<int, float>();
+          private const int MaxShadowStrengthCache = 1000;
++ 
++         private PCSSLight pcssLight;
++         private bool isInitialized = false;
++         private bool isInMirror = false;
++ 
++         private void Start()
++         {
++             pcssLight = GetComponent<PCSSLight>();
++             if (!isInitialized)
++             {
++                 InitializePCSSLight();
++             }
++         }
++ 
++         private void InitializePCSSLight()
++         {
++             if (pcssLight != null)
++             {
++                 pcssLight.Setup();
++                 isInitialized = true;
++             }
++         }
++ 
++         private void OnDestroy()
++         {
++             try
++             {
++                 if (pcssLight != null)
++                 {
++                     pcssLight.DestroyShadowRenderTexture();
++                 }
++             }
++             catch (System.Exception ex)
++             {
++                 Debug.LogError($"Error destroying PCSS Light shadow render texture: {ex.Message}");
++             }
++         }
++ 
++         private void Update()
++         {
++             try
++             {
++                 if (pcssLight != null)
++                 {
++                     // ミラー内での処理を最適化
++                     var currentIsInMirror = Networking.LocalPlayer?.IsUserInVR() == true && 
++                                           gameObject.layer == LayerMask.NameToLayer("MirrorReflection");
++                     
++                     if (currentIsInMirror != isInMirror)
++                     {
++                         isInMirror = currentIsInMirror;
++                         pcssLight.Setup(); // ミラー状態が変わった時に再セットアップ
++                     }
++ 
++                     pcssLight.UpdateShaderValues();
++                     pcssLight.UpdateCommandBuffer();
++                 }
++             }
++             catch (System.Exception ex)
++             {
++                 Debug.LogError($"Error updating PCSS Light: {ex.Message}");
++             }
++         }
+  
+          private void OnEnable()
+              }
+              return null;
++         }
+      }
+  }
+```
+
+---
+
+3. `PCSSLightInstaller.cs`から`PCSSLightPlugin`クラスを削除し、参照を修正します：
+
+---
+
+```diff
+                  {
+                      pcssLight.Setup();
+-                     var plugin = gameObject.AddComponent<PCSSLightPlugin>();
+                      
+                      // モジュラーアバター用の永続化設定
+          }
+      }
+- 
+-     public class PCSSLightPlugin : SDKUnityNativePluginBase
+-     {
+-         private PCSSLight pcssLight;
+-         private bool isInitialized = false;
+-         private bool isInMirror = false;
+- 
+-         private void Start()
+-         {
+-             pcssLight = GetComponent<PCSSLight>();
+-             if (!isInitialized)
+-             {
+-                 InitializePCSSLight();
+-             }
+-         }
+- 
+-         private void InitializePCSSLight()
+-         {
+-             if (pcssLight != null)
+-             {
+-                 pcssLight.Setup();
+-                 isInitialized = true;
+-             }
+-         }
+- 
+-         public override void OnDestroy()
+-         {
+-             try
+-             {
+-                 if (pcssLight != null)
+-                 {
+-                     pcssLight.DestroyShadowRenderTexture();
+-                 }
+-             }
+-             catch (System.Exception ex)
+-             {
+-                 Debug.LogError($"Error destroying PCSS Light shadow render texture: {ex.Message}");
+-             }
+-         }
+- 
+-         public override void OnUpdate()
+-         {
+-             try
+-             {
+-                 if (pcssLight != null)
+-                 {
+-                     // ミラー内での処理を最適化
+-                     var currentIsInMirror = Networking.LocalPlayer?.IsUserInVR() == true && 
+-                                           gameObject.layer == LayerMask.NameToLayer("MirrorReflection");
+-                     
+-                     if (currentIsInMirror != isInMirror)
+-                     {
+-                         isInMirror = currentIsInMirror;
+-                         pcssLight.Setup(); // ミラー状態が変わった時に再セットアップ
+-                     }
+- 
+-                     pcssLight.UpdateShaderValues();
+-                     pcssLight.UpdateCommandBuffer();
+-                 }
+-             }
+-             catch (System.Exception ex)
+-             {
+-                 Debug.LogError($"Error updating PCSS Light: {ex.Message}");
+-             }
+-         }
+-     }
+  }
+  
+```
+
+---
+
+シェーダーの問題については、lilToonのインポートが必要です：
+
+1. VCCでlilToonパッケージをインストール
+2. プロジェクトを再読み込み
+
+フォントの問題については：
+
+1. Noto Sans CJK JPフォントをダウンロードしてインストール
+2. Unity Editorを再起動
+
+これらの変更を適用後、以下の手順で確認してください：
+
+1. Unity Editorを再起動
+2. VCCでプロジェクトを「Resolve」
+3. プロジェクトの「Assets」フォルダを右クリックして「Reimport All」を実行
+
+これでコンパイルエラーが解決するはずです。シェーダーの警告は、lilToonのインポート後に解決されます。
+
+---
+
+_**User**_
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs(7,33): error CS0246: The type or namespace name 'PCSSLightPlugin' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs(79,36): error CS0246: The type or namespace name 'SDKUnityNativePluginBase' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightInstaller.cs(81,17): error CS0246: The type or namespace name 'PCSSLight' could not be found (are you missing a using directive or an assembly reference?)
+
+Failed to find entry-points:
+Mono.Cecil.AssemblyResolutionException: Failed to resolve assembly: 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' ---> System.Exception: Failed to resolve assembly 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' in directories: C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32\Facades
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.core.vpm-resolver\Editor\Dependencies
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Dependencies\librsync
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Integrations\VRChat Example Central\Editor
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Plugins\Harmony
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\WebGLSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Editor\VRCSDK\Plugins
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.ide.rider@3.0.26\Rider\Editor
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\VisionOSPlayer
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Plugins
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\MetroSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Dependencies\Managed
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\WindowsStandaloneSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.avatars\Runtime\VRCSDK\Plugins
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.burst@1.8.12
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.burst@1.8.12\Unity.Burst.CodeGen
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\LinuxStandaloneSupport
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\MacStandaloneSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.mono-cecil@1.11.4
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\iOSSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime\AOT
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\Managed
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.ext.nunit@1.0.6\net35\unity-custom
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\AppleTVSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.collections@2.1.4\Unity.Collections.LowLevel.ILSupport
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\AndroidPlayer
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\Managed\UnityEngine
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\ScriptAssemblies ---> Mono.Cecil.AssemblyResolutionException: Failed to resolve assembly: 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null'
+  at Mono.Cecil.BaseAssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name, Mono.Cecil.ReaderParameters parameters) [0x00105] in <853812ae52c341daaef3c62ecdb86b32>:0 
+  at zzzUnity.Burst.CodeGen.AssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x00013] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+   --- End of inner exception stack trace ---
+  at zzzUnity.Burst.CodeGen.AssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x00060] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.AssemblyLoader.Resolve (Mono.Cecil.AssemblyNameReference name) [0x0007e] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.EntryPointMethodFinder.FindEntryPoints (System.String[] rootAssemblyNames, Burst.Compiler.IL.Hashing.CacheRuntime.HashCacheAssemblyStore assemblyStore, Burst.Compiler.IL.AssemblyLoader assemblyLoader, Burst.Compiler.IL.NativeCompilerOptions options, Burst.Compiler.IL.Server.ProfileDelegate profileCallback, System.Boolean includeRootAssemblyReferences, System.Boolean splitTargets) [0x00055] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass18_1.<FindMethods>b__0 (Burst.Compiler.IL.Server.Caching.CacheManager cacheManager) [0x0005e] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass26_0`1[TResult].<RunTask>b__0 () [0x00145] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.RunTask[TResult] (Burst.Compiler.IL.Server.TargetKey target, System.String taskName, System.String[] assemblyFolders, System.Threading.CancellationToken cancellationToken, System.Func`2[T,TResult] function) [0x00131] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.FindMethods (Burst.Compiler.IL.Server.CompilerServerOptions options, Burst.Compiler.IL.Aot.AotCompilerOptions aotOptions, Burst.Compiler.IL.Server.TargetKey target, Burst.Compiler.IL.Server.Caching.CacheManager cacheManager, Burst.Compiler.IL.CompilerStatistics stats, System.Threading.CancellationToken cancellationToken) [0x00299] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass26_0`1[TResult].<RunTask>b__0 () [0x00145] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.RunTask[TResult] (Burst.Compiler.IL.Server.TargetKey target, System.String taskName, System.String[] assemblyFolders, System.Threading.CancellationToken cancellationToken, System.Func`2[T,TResult] function) [0x00131] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.Compile (Burst.Compiler.IL.Server.CompilerServerOptions options, Burst.Compiler.IL.Server.CompilationMessageStreamer streamer, System.Threading.CancellationToken cancellationToken) [0x001af] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+
+While compiling job:
+
+Assembly with name 'PCSS.Utils' already exists (Assets/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Scripts/Utils/PCSS.Utils.asmdef)
+
+Assembly with name 'PCSS.Utils' already exists (Assets/PCSS-Shader-VRC-main/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Scripts/Utils/PCSS.Utils.asmdef)
+
+Assembly with name 'PCSS.Core' already exists (Assets/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Scripts/Core/PCSS.Core.asmdef)
+
+Assembly with name 'PCSS.Core' already exists (Assets/PCSS-Shader-VRC-main/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Scripts/Core/PCSS.Core.asmdef)
+
+Assembly with name 'PCSS.Shaders' already exists (Assets/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Shaders/PCSS.Shaders.asmdef)
+
+Assembly with name 'PCSS.Shaders' already exists (Assets/PCSS-Shader-VRC-main/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Shaders/PCSS.Shaders.asmdef)
+
+Assembly with name 'PCSS.Shader' already exists (Assets/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Scripts/PCSS.Shader.asmdef)
+
+Assembly with name 'PCSS.Shader' already exists (Assets/PCSS-Shader-VRC-main/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Scripts/PCSS.Shader.asmdef)
+
+Assembly has duplicate references: nadena.dev.modular-avatar.core (Assets/PCSS-Shader-VRC-main/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Scripts/Core/PCSS.Core.asmdef)
+
+Shader error in 'lilToon/PCSS': Couldn't open include file 'liltoon.hlsl'. at line 106
+
+Shader warning in 'lilToon/PCSS': lilToon/PCSS shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
+
+
+Shader warning in 'lilToon/PCSS': Both vertex and fragment programs must be present in a shader snippet. Excluding it from compilation. at line 213
+
+
+
+---
+
+_**Assistant**_
+
+アセンブリの重複エラーが発生しているため、以下の手順で解決します：
+
+1. まず、重複しているディレクトリ構造を整理します：
+
+---
+
+```bash
+Remove-Item -Recurse -Force "Assets/PCSS-Shader-VRC-main"; Remove-Item -Recurse -Force "PCSS-Shader-VRC-main"
+```
+
+```
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> Remove-Item -Recurse -Force "Assets/PCSS-Shader-VRC-main";
+ Remove-Item -Recurse -Force "PCSS-Shader-        Remove-Item -Recurse -Force "Assets/PCSS-Shader-VRC-main";
+ Remove-Item -Recurse -Force "PCSS-Shader-VRC-main"
+Remove-Item : パス 'C:\Users\downl\Downloads\PCSS-Shader-VRC-main\Assets\PCSS-Shader-VRC-main' が存在しない 
+ため検出できません。
+発生場所 行:1 文字:1
++ Remove-Item -Recurse -Force "Assets/PCSS-Shader-VRC-main"; Remove-Ite ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:\Users\downl\...Shader-VRC-main:String) [Remove-Item], It
+
+   emNotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.RemoveItemCommand
+
+
+```
+
+---
+
+2. `PCSSLight.cs`を作成します：
+
+---
+
+```diff
+  using VRC.SDK3.Avatars.Components;
+  
++ namespace PCSSShader.Core
++ {
+      [AddComponentMenu("PCSS/PCSS Light")]
++     [RequireComponent(typeof(Light))]
+      public class PCSSLight : MonoBehaviour
+      {
+          private int shadowmapPropID;
+          private CommandBuffer copyShadowBuffer;
+-     [HideInInspector]
+-     public Light _light;
++         private Light lightComponent;
++         private CommandBuffer commandBuffer;
++         private RenderTexture shadowMap;
+          private bool isSetup = false;
+  
+              try
+              {
+-             _light = GetComponent<Light>();
+-             if (!_light)
++                 lightComponent = GetComponent<Light>();
++                 if (lightComponent == null)
+                  {
+                      Debug.LogError("Light component not found on PCSS Light object.");
+                  resolution = Mathf.ClosestPowerOfTwo(resolution);
+                  if (customShadowResolution)
+-                 _light.shadowCustomResolution = resolution;
++                     lightComponent.shadowCustomResolution = resolution;
+                  else
+-                 _light.shadowCustomResolution = 0;
++                     lightComponent.shadowCustomResolution = 0;
+  
+                  shadowmapPropID = Shader.PropertyToID("_ShadowMap");
+  
+                  if (copyShadowBuffer != null)
+                  {
+-                 _light.RemoveCommandBuffer(lightEvent, copyShadowBuffer);
++                     lightComponent.RemoveCommandBuffer(lightEvent, copyShadowBuffer);
+                  }
+  
+                  copyShadowBuffer = new CommandBuffer();
+                  copyShadowBuffer.name = "PCSS Shadows";
+  
+-             _light.AddCommandBuffer(lightEvent, copyShadowBuffer);
++                 lightComponent.AddCommandBuffer(lightEvent, copyShadowBuffer);
+  
+                  CreateShadowRenderTexture();
+                  SetFlag("POISSON_32", maxSamples < 33);
+                  SetFlag("POISSON_64", maxSamples > 33);
++ 
++                 Matrix4x4 worldToLight = lightComponent.transform.worldToLocalMatrix;
++                 Matrix4x4 projection = Matrix4x4.Perspective(lightComponent.spotAngle, 1f, lightComponent.shadowNearPlane, lightComponent.range);
++                 
++                 Shader.SetGlobalMatrix("_WorldToLight", worldToLight);
++                 Shader.SetGlobalMatrix("_LightProjection", projection);
++                 Shader.SetGlobalFloat("_LightRange", lightComponent.range);
++                 Shader.SetGlobalFloat("_ShadowBias", lightComponent.shadowBias);
+              }
+              catch (System.Exception ex)
+          public void UpdateCommandBuffer()
+          {
+-         if (!_light)
+-             return;
++             if (commandBuffer == null || lightComponent == null) return;
+  
+-         try
+-         {
+-             copyShadowBuffer.Clear();
+-             copyShadowBuffer.SetShadowSamplingMode(BuiltinRenderTextureType.CurrentActive, ShadowSamplingMode.RawDepth);
+-             copyShadowBuffer.Blit(BuiltinRenderTextureType.CurrentActive, shadowRenderTexture);
+-             copyShadowBuffer.SetGlobalTexture(shadowmapPropID, shadowRenderTexture);
+-         }
+-         catch (System.Exception ex)
+-         {
+-             Debug.LogError($"Error updating command buffer: {ex.Message}");
+-         }
++             commandBuffer.Clear();
++             commandBuffer.SetGlobalTexture("_ShadowMap", BuiltinRenderTextureType.CurrentActive);
+          }
+  
+          private void OnDisable()
+          {
+-         if (_light && copyShadowBuffer != null)
++             if (lightComponent && copyShadowBuffer != null)
+              {
+-             _light.RemoveCommandBuffer(lightEvent, copyShadowBuffer);
++                 lightComponent.RemoveCommandBuffer(lightEvent, copyShadowBuffer);
+              }
+          }
+          {
+              DestroyShadowRenderTexture();
+-         if (_light && copyShadowBuffer != null)
++             if (lightComponent && copyShadowBuffer != null)
+              {
+-             _light.RemoveCommandBuffer(lightEvent, copyShadowBuffer);
++                 lightComponent.RemoveCommandBuffer(lightEvent, copyShadowBuffer);
++             }
+          }
+      }
+```
 
 ---
 

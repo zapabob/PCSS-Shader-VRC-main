@@ -1,7 +1,6 @@
 using UnityEngine;
 using VRC.SDKBase;
 using nadena.dev.modular_avatar.core;
-using nadena.dev.ndmf;
 using VRC.SDK3.Avatars.Components;
 
 namespace PCSSShader.Core
@@ -22,8 +21,8 @@ namespace PCSSShader.Core
         {
             try
             {
-                var pcssLight = GetComponent<PCSSLight>();
-                if (pcssLight)
+                var pcssLight = gameObject.AddComponent<PCSSLight>();
+                if (pcssLight != null)
                 {
                     pcssLight.Setup();
                     var plugin = gameObject.AddComponent<PCSSLightPlugin>();
@@ -52,10 +51,6 @@ namespace PCSSShader.Core
                         }
                     }
                 }
-                else
-                {
-                    Debug.LogError("PCSSLight component not found on the game object.");
-                }
             }
             catch (System.Exception ex)
             {
@@ -70,72 +65,6 @@ namespace PCSSShader.Core
             if (avatar == null)
             {
                 Debug.LogWarning("VRCAvatarDescriptorが見つかりません。アバターのルートに配置してください。");
-            }
-        }
-    }
-
-    public class PCSSLightPlugin : SDKUnityNativePluginBase
-    {
-        private PCSSLight pcssLight;
-        private bool isInitialized = false;
-        private bool isInMirror = false;
-
-        private void Start()
-        {
-            pcssLight = GetComponent<PCSSLight>();
-            if (!isInitialized)
-            {
-                InitializePCSSLight();
-            }
-        }
-
-        private void InitializePCSSLight()
-        {
-            if (pcssLight != null)
-            {
-                pcssLight.Setup();
-                isInitialized = true;
-            }
-        }
-
-        public override void OnDestroy()
-        {
-            try
-            {
-                if (pcssLight != null)
-                {
-                    pcssLight.DestroyShadowRenderTexture();
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"Error destroying PCSS Light shadow render texture: {ex.Message}");
-            }
-        }
-
-        public override void OnUpdate()
-        {
-            try
-            {
-                if (pcssLight != null)
-                {
-                    // ミラー内での処理を最適化
-                    var currentIsInMirror = Networking.LocalPlayer?.IsUserInVR() == true && 
-                                          gameObject.layer == LayerMask.NameToLayer("MirrorReflection");
-                    
-                    if (currentIsInMirror != isInMirror)
-                    {
-                        isInMirror = currentIsInMirror;
-                        pcssLight.Setup(); // ミラー状態が変わった時に再セットアップ
-                    }
-
-                    pcssLight.UpdateShaderValues();
-                    pcssLight.UpdateCommandBuffer();
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"Error updating PCSS Light: {ex.Message}");
             }
         }
     }

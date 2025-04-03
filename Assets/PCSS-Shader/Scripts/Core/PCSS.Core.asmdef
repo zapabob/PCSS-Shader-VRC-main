@@ -1,6 +1,11 @@
 {
     "name": "PCSS.Core",
     "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:5718fb738711cd34ea54e9553040911d",
+        "GUID:fc900867c0f47cd49b6e2ae4ef907300",
+        "GUID:6490804aa441dfe4b88eb56cccbdf081",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "VRC.SDK3.Avatars.Components",
         "VRC.SDKBase",
         "nadena.dev.modular-avatar.core",
