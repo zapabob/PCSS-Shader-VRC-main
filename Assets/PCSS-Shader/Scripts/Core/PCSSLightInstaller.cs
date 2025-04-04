@@ -1,6 +1,7 @@
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.SDK3.Avatars.Components;
+using VRC.SDK3.Avatars.ScriptableObjects;
 using PCSS.Core;
 
 namespace PCSS.Core
@@ -22,6 +23,17 @@ namespace PCSS.Core
         [SerializeField, Range(0f, 1f)]
         private float _defaultIntensity = 1f;
 
+        [Header("アニメーション設定")]
+        [SerializeField]
+        private string _toggleParameterName = "PCSSLightToggle";
+        
+        [SerializeField]
+        private string _menuPath = "PCSS Light/Toggle";
+
+        private VRCExpressionParameters _expressionParameters;
+        private Light _light;
+        private PCSSLightPlugin _plugin;
+
         private void OnEnable()
         {
             if (_autoSetup && Application.isPlaying)
@@ -35,15 +47,15 @@ namespace PCSS.Core
             try
             {
                 // 1. Lightコンポーネントのセットアップ
-                var light = gameObject.GetComponent<Light>();
-                if (light == null)
+                _light = gameObject.GetComponent<Light>();
+                if (_light == null)
                 {
-                    light = gameObject.AddComponent<Light>();
+                    _light = gameObject.AddComponent<Light>();
                 }
                 
                 // Lightコンポーネントの設定
-                light.type = LightType.Directional;
-                light.shadows = LightShadows.Soft;
+                _light.type = LightType.Directional;
+                _light.shadows = LightShadows.Soft;
 
                 // 2. PCSSLightコンポーネントのセットアップ
                 var pcssLight = gameObject.GetComponent<PCSSLight>();
@@ -57,15 +69,16 @@ namespace PCSS.Core
                     pcssLight.Setup();
 
                     // 3. PCSSLightPluginコンポーネントのセットアップ
-                    var plugin = gameObject.GetComponent<PCSSLightPlugin>();
-                    if (plugin == null)
+                    _plugin = gameObject.GetComponent<PCSSLightPlugin>();
+                    if (_plugin == null)
                     {
-                        plugin = gameObject.AddComponent<PCSSLightPlugin>();
+                        _plugin = gameObject.AddComponent<PCSSLightPlugin>();
                     }
 
-                    if (plugin != null)
+                    if (_plugin != null)
                     {
-                        SetupVRCFuryParameters(plugin);
+                        SetupVRCFuryParameters(_plugin);
+                        SetupToggleParameter();
                         Debug.Log("PCSS Light setup complete with lilToon and VRCFury compatibility.", this);
                     }
                     else
@@ -88,7 +101,6 @@ namespace PCSS.Core
         {
             try
             {
-                // VRCFuryパラメータの設定
                 var avatar = GetComponent<VRCAvatarDescriptor>();
                 if (avatar != null)
                 {
@@ -96,11 +108,15 @@ namespace PCSS.Core
                     plugin.enabled = true;
                     plugin.SetParameterValue(PCSS_ENABLED_PARAM, 1f);
                     plugin.SetParameterValue(PCSS_INTENSITY_PARAM, _defaultIntensity);
+                    plugin.SetParameterValue(_toggleParameterName, 1f);
 
                     // シェーダーキーワードの設定
                     Shader.EnableKeyword("_PCSS_ON");
                     Shader.SetGlobalFloat("_PCSSEnabled", 1f);
                     Shader.SetGlobalFloat("_PCSSIntensity", _defaultIntensity);
+
+                    // VRCFuryのパラメータ設定
+                    SetupToggleParameter();
                 }
             }
             catch (System.Exception ex)
@@ -108,6 +124,120 @@ namespace PCSS.Core
                 Debug.LogError($"Error setting up VRCFury parameters: {ex.Message}\nStackTrace: {ex.StackTrace}");
             }
         }
+
+        private void SetupToggleParameter()
+        {
+#if UNITY_EDITOR
+            try
+            {
+                var avatar = GetComponent<VRCAvatarDescriptor>();
+                if (avatar != null && avatar.expressionParameters != null)
+                {
+                    _expressionParameters = avatar.expressionParameters;
+                    
+                    // トグルパラメータの追加
+                    var param = new VRCExpressionParameters.Parameter
+                    {
+                        name = _toggleParameterName,
+                        valueType = VRCExpressionParameters.ValueType.Bool,
+                        defaultValue = 1f,
+                        saved = true
+                    };
+
+                    // 既存のパラメータをチェック
+                    bool paramExists = false;
+                    for (int i = 0; i < _expressionParameters.parameters.Length; i++)
+                    {
+                        if (_expressionParameters.parameters[i].name == _toggleParameterName)
+                        {
+                            paramExists = true;
+                            break;
+                        }
+                    }
+
+                    // パラメータが存在しない場合は追加
+                    if (!paramExists)
+                    {
+                        var newParams = new VRCExpressionParameters.Parameter[_expressionParameters.parameters.Length + 1];
+                        System.Array.Copy(_expressionParameters.parameters, newParams, _expressionParameters.parameters.Length);
+                        newParams[newParams.Length - 1] = param;
+                        _expressionParameters.parameters = newParams;
+                        UnityEditor.EditorUtility.SetDirty(_expressionParameters);
+                    }
+
+                    // メニューアイテムの作成
+                    CreateToggleMenuItem();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Error setting up toggle parameter: {ex.Message}\nStackTrace: {ex.StackTrace}");
+            }
+#endif
+        }
+
+#if UNITY_EDITOR
+        private void CreateToggleMenuItem()
+        {
+            try
+            {
+                var avatar = GetComponent<VRCAvatarDescriptor>();
+                if (avatar != null && avatar.expressionsMenu != null)
+                {
+                    var menu = avatar.expressionsMenu;
+                    
+                    // 既存のメニューアイテムをチェック
+                    bool menuExists = false;
+                    foreach (var control in menu.controls)
+                    {
+                        if (control.parameter.name == _toggleParameterName)
+                        {
+                            menuExists = true;
+                            break;
+                        }
+                    }
+
+                    // メニューアイテムが存在しない場合は追加
+                    if (!menuExists && menu.controls.Count < VRCExpressionsMenu.MAX_CONTROLS)
+                    {
+                        var control = new VRCExpressionsMenu.Control
+                        {
+                            name = "PCSS Light",
+                            type = VRCExpressionsMenu.Control.ControlType.Toggle,
+                            parameter = new VRCExpressionsMenu.Control.Parameter { name = _toggleParameterName },
+                            value = 1f
+                        };
+
+                        menu.controls.Add(control);
+                        UnityEditor.EditorUtility.SetDirty(menu);
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Error creating toggle menu item: {ex.Message}\nStackTrace: {ex.StackTrace}");
+            }
+        }
+
+        [UnityEditor.MenuItem("PCSS/Setup PCSS Light")]
+        private static void SetupPCSSLightMenuItem()
+        {
+            var selection = UnityEditor.Selection.activeGameObject;
+            if (selection == null)
+            {
+                Debug.LogError("ゲームオブジェクトが選択されていません。");
+                return;
+            }
+
+            var installer = selection.GetComponent<PCSSLightInstaller>();
+            if (installer == null)
+            {
+                installer = selection.AddComponent<PCSSLightInstaller>();
+            }
+
+            installer.SetupPCSSLight();
+        }
+#endif
 
         private void OnValidate()
         {
@@ -137,12 +267,12 @@ namespace PCSS.Core
         {
             try
             {
-                var plugin = GetComponent<PCSSLightPlugin>();
-                if (plugin != null)
+                if (_plugin != null)
                 {
                     // シェーダーキーワードとパラメータの整合性チェック
                     bool isEnabled = Shader.IsKeywordEnabled("_PCSS_ON");
                     float intensity = Shader.GetGlobalFloat("_PCSSIntensity");
+                    float toggleValue = _plugin.GetParameterValue(_toggleParameterName);
 
                     if (!isEnabled)
                     {
@@ -153,6 +283,12 @@ namespace PCSS.Core
                     {
                         Debug.LogWarning("PCSSの強度が0に設定されています。VRCFuryの自動修正により変更された可能性があります。");
                     }
+
+                    // ライトの状態を同期
+                    if (_light != null)
+                    {
+                        _light.enabled = toggleValue > 0.5f;
+                    }
                 }
             }
             catch (System.Exception ex)
@@ -160,26 +296,5 @@ namespace PCSS.Core
                 Debug.LogError($"Error validating VRCFury compatibility: {ex.Message}\nStackTrace: {ex.StackTrace}");
             }
         }
-
-#if UNITY_EDITOR
-        [UnityEditor.MenuItem("PCSS/Setup PCSS Light")]
-        private static void SetupPCSSLightMenuItem()
-        {
-            var selection = UnityEditor.Selection.activeGameObject;
-            if (selection == null)
-            {
-                Debug.LogError("ゲームオブジェクトが選択されていません。");
-                return;
-            }
-
-            var installer = selection.GetComponent<PCSSLightInstaller>();
-            if (installer == null)
-            {
-                installer = selection.AddComponent<PCSSLightInstaller>();
-            }
-
-            installer.SetupPCSSLight();
-        }
-#endif
     }
 }

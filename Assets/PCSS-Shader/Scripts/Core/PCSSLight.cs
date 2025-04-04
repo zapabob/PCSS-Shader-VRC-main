@@ -3,15 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-// using nadena.dev.modular_avatar.core; // Removed as MA setup is handled by PCSSLightPlugin
 using VRC.SDK3.Avatars.Components;
+using VRC.SDKBase;
 
 namespace PCSS.Core // Changed namespace to PCSS.Core
 {
     [AddComponentMenu("PCSS/PCSS Light")]
+    [ExecuteInEditMode]
     [RequireComponent(typeof(Light))]
     public class PCSSLight : MonoBehaviour
     {
+        // VRCFury互換のパラメータ名
+        private const string PCSS_PARAM_PREFIX = "PCSS_";
+        private const string PCSS_ENABLED_PARAM = PCSS_PARAM_PREFIX + "Enabled";
+        private const string PCSS_INTENSITY_PARAM = PCSS_PARAM_PREFIX + "Intensity";
+        private const string PCSS_SOFTNESS_PARAM = PCSS_PARAM_PREFIX + "Softness";
+
         [Header("シャドウ設定")]
         public int resolution = 4096;
         public bool customShadowResolution = false;
@@ -73,6 +80,9 @@ namespace PCSS.Core // Changed namespace to PCSS.Core
         // Added to support mirror state notification from PCSSLightPlugin
         private bool _isInMirror = false;
         
+        private bool _isVRCFuryInitialized = false;
+        private VRCAvatarDescriptor _avatarDescriptor;
+
         private void Start()
         {
             if (!isSetup)
@@ -91,6 +101,15 @@ namespace PCSS.Core // Changed namespace to PCSS.Core
                     Debug.LogError("Light component not found on PCSS Light object.");
                     return;
                 }
+
+                // アバターのセットアップ
+                _avatarDescriptor = GetComponentInParent<VRCAvatarDescriptor>();
+                if (_avatarDescriptor == null)
+                {
+                    Debug.LogWarning("PCSSLight should be placed on an avatar with VRCAvatarDescriptor.");
+                }
+
+                InitializeVRCFuryCompatibility();
 
                 resolution = Mathf.ClosestPowerOfTwo(resolution);
                 if (customShadowResolution)
@@ -119,6 +138,30 @@ namespace PCSS.Core // Changed namespace to PCSS.Core
             catch (System.Exception ex)
             {
                 Debug.LogError($"Error in PCSS Light Setup: {ex.Message}");
+            }
+        }
+
+        private void InitializeVRCFuryCompatibility()
+        {
+            if (_isVRCFuryInitialized) return;
+
+            try
+            {
+                if (_avatarDescriptor != null)
+                {
+                    // シェーダーキーワードの設定
+                    Shader.EnableKeyword("_PCSS_ON");
+                    Shader.SetGlobalFloat(PCSS_ENABLED_PARAM, 1f);
+                    Shader.SetGlobalFloat(PCSS_INTENSITY_PARAM, 1f);
+                    Shader.SetGlobalFloat(PCSS_SOFTNESS_PARAM, Softness);
+
+                    _isVRCFuryInitialized = true;
+                    Debug.Log("VRCFury compatibility initialized successfully.", this);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Error initializing VRCFury compatibility: {ex.Message}");
             }
         }
 
@@ -166,6 +209,19 @@ namespace PCSS.Core // Changed namespace to PCSS.Core
         {
             try
             {
+                if (!_isVRCFuryInitialized)
+                {
+                    InitializeVRCFuryCompatibility();
+                }
+
+                // VRCFuryパラメータの更新
+                if (_isVRCFuryInitialized)
+                {
+                    Shader.SetGlobalFloat(PCSS_ENABLED_PARAM, enabled ? 1f : 0f);
+                    Shader.SetGlobalFloat(PCSS_INTENSITY_PARAM, lightComponent ? lightComponent.intensity : 0f);
+                    Shader.SetGlobalFloat(PCSS_SOFTNESS_PARAM, Softness);
+                }
+
                 Shader.SetGlobalInt("Blocker_Samples", Blocker_SampleCount);
                 Shader.SetGlobalInt("PCF_Samples", PCF_SampleCount);
 
@@ -254,11 +310,27 @@ namespace PCSS.Core // Changed namespace to PCSS.Core
             }
         }
 
+        private void OnEnable()
+        {
+            if (!isSetup)
+            {
+                Setup();
+            }
+            UpdateShaderValues();
+        }
+
         private void OnDisable()
         {
             if (lightComponent && copyShadowBuffer != null)
             {
                 lightComponent.RemoveCommandBuffer(lightEvent, copyShadowBuffer);
+            }
+            
+            // VRCFuryパラメータをリセット
+            if (_isVRCFuryInitialized)
+            {
+                Shader.SetGlobalFloat(PCSS_ENABLED_PARAM, 0f);
+                Shader.SetGlobalFloat(PCSS_INTENSITY_PARAM, 0f);
             }
         }
 
@@ -277,8 +349,15 @@ namespace PCSS.Core // Changed namespace to PCSS.Core
             if (_isInMirror != inMirror)
             {
                 _isInMirror = inMirror;
-                // If mirror state changes, we may need to update rendering
-                // This is a simplified implementation - add mirror-specific logic as needed
+                
+                // ミラー内での描画設定を最適化
+                if (_isInMirror)
+                {
+                    // ミラー内でのパフォーマンス最適化
+                    Blocker_SampleCount = Mathf.Min(Blocker_SampleCount, 32);
+                    PCF_SampleCount = Mathf.Min(PCF_SampleCount, 32);
+                }
+                
                 UpdateShaderValues();
                 UpdateCommandBuffer();
             }

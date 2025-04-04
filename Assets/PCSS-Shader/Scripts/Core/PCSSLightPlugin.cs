@@ -27,6 +27,12 @@ namespace PCSS.Core
         private const string MIRROR_REFLECTION_LAYER_NAME = "MirrorReflection";
         private const string PCSS_ENABLED_PARAMETER_NAME = "PCSS_Light_Enabled";
 
+        // VRCFury互換のパラメータ名
+        private const string PCSS_PARAM_PREFIX = "PCSS_";
+        private const string PCSS_ENABLED_PARAM = PCSS_PARAM_PREFIX + "Enabled";
+        private const string PCSS_INTENSITY_PARAM = PCSS_PARAM_PREFIX + "Intensity";
+        private const string PCSS_SOFTNESS_PARAM = PCSS_PARAM_PREFIX + "Softness";
+
         [Header("PCSS 設定")]
         [Tooltip("シャドウマップの解像度。カスタム解像度を使用する場合に適用されます。")]
         public int resolution = 4096;
@@ -83,6 +89,9 @@ namespace PCSS.Core
         private bool _isInMirror = false;
         private int _mirrorLayer = -1;
 
+        private VRCExpressionParameters _expressionParameters;
+        private bool _parametersInitialized = false;
+
         private void Awake()
         {
             _lightComponent = GetComponent<Light>();
@@ -107,6 +116,7 @@ namespace PCSS.Core
             if (enabled && !_isInitialized)
             {
                 InitializePCSS();
+                InitializeVRCFuryParameters();
             }
         }
 
@@ -422,28 +432,52 @@ namespace PCSS.Core
                 if (_localAvatarDescriptor != null)
                 {
                     float distance = Vector3.Distance(transform.position, _localAvatarDescriptor.transform.position);
-
-                    if (distance <= PCSS_EFFECT_NEAR_DISTANCE)
-                    {
-                        shadowStrength = 1.0f;
-                    }
-                    else if (distance < PCSS_EFFECT_FAR_DISTANCE)
-                    {
-                        float t = Mathf.InverseLerp(PCSS_EFFECT_NEAR_DISTANCE, PCSS_EFFECT_FAR_DISTANCE, distance);
-                        shadowStrength = Mathf.Lerp(1.0f, 0.0f, t);
-                    }
-                    else
-                    {
-                        shadowStrength = 0.0f;
-                    }
+                    shadowStrength = CalculateShadowStrength(distance);
                 }
 
+                // VRCFuryパラメータの更新
+                SetParameterValue(PCSS_INTENSITY_PARAM, shadowStrength);
+                SetParameterValue(PCSS_SOFTNESS_PARAM, softness);
+                
                 Shader.SetGlobalFloat("_PCSShadowStrength", shadowStrength);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Error updating PCSS effect based on distance: {e.Message}\n{e.StackTrace}", this);
+                Debug.LogError($"Error updating PCSS effect: {e.Message}\n{e.StackTrace}", this);
                 Shader.SetGlobalFloat("_PCSShadowStrength", 1.0f);
+            }
+        }
+
+        private float CalculateShadowStrength(float distance)
+        {
+            if (distance <= PCSS_EFFECT_NEAR_DISTANCE)
+                return 1.0f;
+            if (distance >= PCSS_EFFECT_FAR_DISTANCE)
+                return 0.0f;
+            
+            float t = Mathf.InverseLerp(PCSS_EFFECT_NEAR_DISTANCE, PCSS_EFFECT_FAR_DISTANCE, distance);
+            return Mathf.Lerp(1.0f, 0.0f, t);
+        }
+
+        public void SetParameterValue(string paramName, float value)
+        {
+            try
+            {
+                if (_expressionParameters != null)
+                {
+                    foreach (var param in _expressionParameters.parameters)
+                    {
+                        if (param.name == paramName)
+                        {
+                            param.defaultValue = value;
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error setting parameter {paramName}: {ex.Message}", this);
             }
         }
 
@@ -471,6 +505,66 @@ namespace PCSS.Core
             bool onMirrorLayer = (_mirrorLayer != -1) && (gameObject.layer == _mirrorLayer);
 
             return inVR && onMirrorLayer;
+        }
+
+        private void InitializeVRCFuryParameters()
+        {
+            if (_parametersInitialized) return;
+
+            try
+            {
+                var avatar = GetComponentInParent<VRCAvatarDescriptor>();
+                if (avatar != null && avatar.expressionParameters != null)
+                {
+                    _expressionParameters = avatar.expressionParameters;
+                    
+                    // パラメータの追加
+                    AddParameterIfNotExists(PCSS_ENABLED_PARAM, VRCExpressionParameters.ValueType.Bool, 1f);
+                    AddParameterIfNotExists(PCSS_INTENSITY_PARAM, VRCExpressionParameters.ValueType.Float, 1f);
+                    AddParameterIfNotExists(PCSS_SOFTNESS_PARAM, VRCExpressionParameters.ValueType.Float, softness);
+
+                    _parametersInitialized = true;
+                    Debug.Log("VRCFury parameters initialized successfully.", this);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error initializing VRCFury parameters: {ex.Message}\n{ex.StackTrace}", this);
+            }
+        }
+
+        private void AddParameterIfNotExists(string paramName, VRCExpressionParameters.ValueType valueType, float defaultValue)
+        {
+#if UNITY_EDITOR
+            if (_expressionParameters == null) return;
+
+            bool paramExists = false;
+            foreach (var param in _expressionParameters.parameters)
+            {
+                if (param.name == paramName)
+                {
+                    paramExists = true;
+                    break;
+                }
+            }
+
+            if (!paramExists)
+            {
+                var newParams = new VRCExpressionParameters.Parameter[_expressionParameters.parameters.Length + 1];
+                Array.Copy(_expressionParameters.parameters, newParams, _expressionParameters.parameters.Length);
+                
+                newParams[newParams.Length - 1] = new VRCExpressionParameters.Parameter
+                {
+                    name = paramName,
+                    valueType = valueType,
+                    defaultValue = defaultValue,
+                    saved = true
+                };
+
+                _expressionParameters.parameters = newParams;
+                EditorUtility.SetDirty(_expressionParameters);
+            }
+#endif
         }
     }
 }
