@@ -3639,6 +3639,232 @@ _**Assistant**_
 
 ---
 
+2. 次に、`PCSSLightInstaller.cs`の修正を行います：
+
+---
+
+```diff
+  namespace PCSS.Core
+  {
+-     [AddComponentMenu("PCSS/Light Installer")]
++     [AddComponentMenu("PCSS/Light Setup")]
+      [ExecuteInEditMode]
+      [DisallowMultipleComponent]
+              SetupPCSSLight();
+          }
++ 
++         private void Awake()
++         {
++             if (_autoSetup)
++             {
++                 SetupPCSSLight();
++             }
++         }
+  
+          private void SetupPCSSLight()
+  
+                  // 3. VRChat関連のセットアップ
++                 var avatar = GetComponentInParent<VRCAvatarDescriptor>();
++                 if (avatar != null)
++                 {
+                      SetupVRChatComponents();
++                 }
+              }
+              catch (System.Exception ex)
+```
+
+---
+
+3. `PCSSLight.cs`の修正を行います：
+
+---
+
+Cancelled
+
+---
+
+
+
+---
+
+_**User**_
+
+ゲームオブジェクトにアタッチメントできない
+
+---
+
+_**Assistant**_
+
+コンポーネントのアタッチメント問題を解決するため、以下の修正を行います：
+
+1. まず、`PCSSLight.cs`の修正を行います：
+
+---
+
+```diff
+  namespace PCSS.Core
+  {
+-     [AddComponentMenu("PCSS/Light Component")]
++     [AddComponentMenu("PCSS/Light Core")]
+      [ExecuteInEditMode]
+      [RequireComponent(typeof(Light))]
+          }
+  
+-         private void OnEnable()
++         private void Start()
+          {
+              if (!isSetup)
+              {
+                  Setup();
+              }
+-             UpdateShaderValues();
+          }
+  
+          private void Reset()
+          {
++             isSetup = false;
+              Setup();
+          }
+  
+          public void Setup()
+          {
+-             if (isSetup) return;
+- 
+              try
+              {
++                 if (isSetup) return;
++ 
+                  lightComponent = GetComponent<Light>();
+                  if (lightComponent == null)
+  
+                  // 基本設定の初期化
+-                 if (noiseTexture == null)
+-                 {
+-                     noiseTexture = new Texture2D(64, 64, TextureFormat.R8, false)
+-                     {
+-                         filterMode = FilterMode.Bilinear,
+-                         wrapMode = TextureWrapMode.Repeat
+-                     };
+-                     // ノイズテクスチャの生成（簡単なランダムノイズ）
+-                     Color[] pixels = new Color[64 * 64];
+-                     for (int i = 0; i < pixels.Length; i++)
+-                     {
+-                         pixels[i] = new Color(Random.value, Random.value, Random.value, 1);
+-                     }
+-                     noiseTexture.SetPixels(pixels);
+-                     noiseTexture.Apply();
+-                 }
+- 
+-                 resolution = Mathf.ClosestPowerOfTwo(resolution);
+-                 if (customShadowResolution)
+-                 {
+-                     lightComponent.shadowCustomResolution = resolution;
+-                 }
++                 InitializeBasicSettings();
+  
+                  // シャドウマップの設定
+              }
+          }
++ 
++         private void InitializeBasicSettings()
++         {
++             // ノイズテクスチャの初期化
++             if (noiseTexture == null)
++             {
++                 noiseTexture = new Texture2D(64, 64, TextureFormat.R8, false)
++                 {
++                     filterMode = FilterMode.Bilinear,
++                     wrapMode = TextureWrapMode.Repeat
++                 };
++                 GenerateNoiseTexture();
++             }
++ 
++             // 解像度の設定
++             resolution = Mathf.ClosestPowerOfTwo(resolution);
++             if (customShadowResolution)
++             {
++                 lightComponent.shadowCustomResolution = resolution;
++             }
++ 
++             // シャドウの設定
++             lightComponent.shadows = LightShadows.Soft;
++             lightComponent.shadowStrength = 1f;
++         }
++ 
++         private void GenerateNoiseTexture()
++         {
++             Color[] pixels = new Color[64 * 64];
++             for (int i = 0; i < pixels.Length; i++)
++             {
++                 float value = Random.value;
++                 pixels[i] = new Color(value, value, value, 1);
++             }
++             noiseTexture.SetPixels(pixels);
++             noiseTexture.Apply();
++         }
+  
+          private void InitializeVRCFuryCompatibility()
+```
+
+---
+
+2. `PCSSLightInstaller.cs`の修正を行います：
+
+---
+
+```diff
+  namespace PCSS.Core
+  {
+-     [AddComponentMenu("PCSS/Light Setup")]
++     [AddComponentMenu("PCSS/Setup")]
+      [ExecuteInEditMode]
+      [DisallowMultipleComponent]
+          private PCSSLight _pcssLight;
+  
+-         private void OnEnable()
++         private void Awake()
++         {
++             if (_autoSetup)
++             {
++                 SetupPCSSLight();
++             }
++         }
++ 
++         private void Start()
+          {
+              if (_autoSetup)
+              SetupPCSSLight();
+          }
+- 
+-         private void Awake()
+-         {
+-             if (_autoSetup)
+-             {
+-                 SetupPCSSLight();
+-             }
+-         }
+  
+          private void SetupPCSSLight()
+                  {
+                      _light = gameObject.AddComponent<Light>();
++                 }
++                 
++                 // Lightの基本設定
+                  _light.type = LightType.Directional;
+                  _light.shadows = LightShadows.Soft;
+                  _light.intensity = _defaultIntensity;
+-                 }
+  
+                  // 2. PCSSLightコンポーネントのセットアップ
+                  {
+                      Debug.LogError($"Failed to add PCSSLight component to {gameObject.name}", this);
++                     return;
+                  }
+  
+```
+
+---
+
 
 
 ---

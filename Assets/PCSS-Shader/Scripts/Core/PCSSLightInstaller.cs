@@ -6,7 +6,7 @@ using PCSS.Core;
 
 namespace PCSS.Core
 {
-    [AddComponentMenu("PCSS/Light Installer")]
+    [AddComponentMenu("PCSS/Setup")]
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
     public class PCSSLightInstaller : MonoBehaviour
@@ -33,7 +33,15 @@ namespace PCSS.Core
         private Light _light;
         private PCSSLight _pcssLight;
 
-        private void OnEnable()
+        private void Awake()
+        {
+            if (_autoSetup)
+            {
+                SetupPCSSLight();
+            }
+        }
+
+        private void Start()
         {
             if (_autoSetup)
             {
@@ -55,10 +63,12 @@ namespace PCSS.Core
                 if (_light == null)
                 {
                     _light = gameObject.AddComponent<Light>();
-                    _light.type = LightType.Directional;
-                    _light.shadows = LightShadows.Soft;
-                    _light.intensity = _defaultIntensity;
                 }
+                
+                // Lightの基本設定
+                _light.type = LightType.Directional;
+                _light.shadows = LightShadows.Soft;
+                _light.intensity = _defaultIntensity;
 
                 // 2. PCSSLightコンポーネントのセットアップ
                 _pcssLight = gameObject.GetComponent<PCSSLight>();
@@ -75,10 +85,15 @@ namespace PCSS.Core
                 else
                 {
                     Debug.LogError($"Failed to add PCSSLight component to {gameObject.name}", this);
+                    return;
                 }
 
                 // 3. VRChat関連のセットアップ
-                SetupVRChatComponents();
+                var avatar = GetComponentInParent<VRCAvatarDescriptor>();
+                if (avatar != null)
+                {
+                    SetupVRChatComponents();
+                }
             }
             catch (System.Exception ex)
             {

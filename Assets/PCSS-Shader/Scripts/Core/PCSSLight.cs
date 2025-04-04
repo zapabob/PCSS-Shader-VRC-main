@@ -91,8 +91,17 @@ namespace PCSS.Core
             }
         }
 
+        private void Start()
+        {
+            if (!isSetup)
+            {
+                Setup();
+            }
+        }
+
         private void Reset()
         {
+            isSetup = false;
             Setup();
         }
 
@@ -100,6 +109,8 @@ namespace PCSS.Core
         {
             try
             {
+                if (isSetup) return;
+
                 lightComponent = GetComponent<Light>();
                 if (lightComponent == null)
                 {
@@ -115,28 +126,7 @@ namespace PCSS.Core
                 }
 
                 // 基本設定の初期化
-                if (noiseTexture == null)
-                {
-                    noiseTexture = new Texture2D(64, 64, TextureFormat.R8, false)
-                    {
-                        filterMode = FilterMode.Bilinear,
-                        wrapMode = TextureWrapMode.Repeat
-                    };
-                    // ノイズテクスチャの生成（簡単なランダムノイズ）
-                    Color[] pixels = new Color[64 * 64];
-                    for (int i = 0; i < pixels.Length; i++)
-                    {
-                        pixels[i] = new Color(Random.value, Random.value, Random.value, 1);
-                    }
-                    noiseTexture.SetPixels(pixels);
-                    noiseTexture.Apply();
-                }
-
-                resolution = Mathf.ClosestPowerOfTwo(resolution);
-                if (customShadowResolution)
-                {
-                    lightComponent.shadowCustomResolution = resolution;
-                }
+                InitializeBasicSettings();
 
                 // シャドウマップの設定
                 shadowmapPropID = Shader.PropertyToID("_ShadowMap");
@@ -159,6 +149,43 @@ namespace PCSS.Core
                 Debug.LogError($"Error in PCSS Light Setup on {gameObject.name}: {ex.Message}\nStackTrace: {ex.StackTrace}");
                 isSetup = false;
             }
+        }
+
+        private void InitializeBasicSettings()
+        {
+            // ノイズテクスチャの初期化
+            if (noiseTexture == null)
+            {
+                noiseTexture = new Texture2D(64, 64, TextureFormat.R8, false)
+                {
+                    filterMode = FilterMode.Bilinear,
+                    wrapMode = TextureWrapMode.Repeat
+                };
+                GenerateNoiseTexture();
+            }
+
+            // 解像度の設定
+            resolution = Mathf.ClosestPowerOfTwo(resolution);
+            if (customShadowResolution)
+            {
+                lightComponent.shadowCustomResolution = resolution;
+            }
+
+            // シャドウの設定
+            lightComponent.shadows = LightShadows.Soft;
+            lightComponent.shadowStrength = 1f;
+        }
+
+        private void GenerateNoiseTexture()
+        {
+            Color[] pixels = new Color[64 * 64];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                float value = Random.value;
+                pixels[i] = new Color(value, value, value, 1);
+            }
+            noiseTexture.SetPixels(pixels);
+            noiseTexture.Apply();
         }
 
         private void InitializeVRCFuryCompatibility()
