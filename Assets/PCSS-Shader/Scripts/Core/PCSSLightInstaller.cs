@@ -34,28 +34,48 @@ namespace PCSS.Core
         {
             try
             {
-                // Lightコンポーネントが存在しなければ追加
+                // 1. Lightコンポーネントのセットアップ
                 var light = gameObject.GetComponent<Light>();
                 if (light == null)
                 {
                     light = gameObject.AddComponent<Light>();
-                    light.type = LightType.Directional;
-                    light.shadows = LightShadows.Soft;
+                }
+                
+                // Lightコンポーネントの設定
+                light.type = LightType.Directional;
+                light.shadows = LightShadows.Soft;
+
+                // 2. PCSSLightコンポーネントのセットアップ
+                var pcssLight = gameObject.GetComponent<PCSSLight>();
+                if (pcssLight == null)
+                {
+                    pcssLight = gameObject.AddComponent<PCSSLight>();
                 }
 
-                // PCSSLightコンポーネントを追加
-                var pcssLight = gameObject.GetComponent<PCSSLight>() ?? gameObject.AddComponent<PCSSLight>();
                 if (pcssLight != null)
                 {
                     pcssLight.Setup();
 
-                    // PCSSLightPluginコンポーネントを追加
-                    var plugin = gameObject.GetComponent<PCSSLightPlugin>() ?? gameObject.AddComponent<PCSSLightPlugin>();
+                    // 3. PCSSLightPluginコンポーネントのセットアップ
+                    var plugin = gameObject.GetComponent<PCSSLightPlugin>();
+                    if (plugin == null)
+                    {
+                        plugin = gameObject.AddComponent<PCSSLightPlugin>();
+                    }
+
                     if (plugin != null)
                     {
                         SetupVRCFuryParameters(plugin);
                         Debug.Log("PCSS Light setup complete with lilToon and VRCFury compatibility.", this);
                     }
+                    else
+                    {
+                        Debug.LogError("Failed to add PCSSLightPlugin component.", this);
+                    }
+                }
+                else
+                {
+                    Debug.LogError("Failed to add PCSSLight component.", this);
                 }
             }
             catch (System.Exception ex)

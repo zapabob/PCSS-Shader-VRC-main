@@ -909,11 +909,162 @@ Read file: Assets/PCSS-Shader/Scripts/Core/PCSS.Core.asmdef
 
 ---
 
-Cancelled
+```diff
+  {
+      [AddComponentMenu("PCSS/PCSS Light Installer")]
++     [ExecuteInEditMode]
++     [DisallowMultipleComponent]
++     [RequireComponent(typeof(VRCAvatarDescriptor))]
+      public class PCSSLightInstaller : MonoBehaviour
+      {
+          private float _defaultIntensity = 1f;
+  
+-         private void Start()
++         private void OnEnable()
+          {
+-             if (_autoSetup)
++             if (_autoSetup && Application.isPlaying)
+              {
+                  SetupPCSSLight();
+  
+                  // PCSSLightコンポーネントを追加
+-                 var pcssLight = gameObject.AddComponent<PCSSLight>();
++                 var pcssLight = gameObject.GetComponent<PCSSLight>() ?? gameObject.AddComponent<PCSSLight>();
+                  if (pcssLight != null)
+                  {
+                      pcssLight.Setup();
+  
+                      // PCSSLightPluginコンポーネントを追加
+-                     var plugin = gameObject.AddComponent<PCSSLightPlugin>();
++                     var plugin = gameObject.GetComponent<PCSSLightPlugin>() ?? gameObject.AddComponent<PCSSLightPlugin>();
+                      if (plugin != null)
+                      {
+              }
+          }
++ 
++ #if UNITY_EDITOR
++         [UnityEditor.MenuItem("PCSS/Setup PCSS Light")]
++         private static void SetupPCSSLightMenuItem()
++         {
++             var selection = UnityEditor.Selection.activeGameObject;
++             if (selection == null)
++             {
++                 Debug.LogError("ゲームオブジェクトが選択されていません。");
++                 return;
++             }
++ 
++             var installer = selection.GetComponent<PCSSLightInstaller>();
++             if (installer == null)
++             {
++                 installer = selection.AddComponent<PCSSLightInstaller>();
++             }
++ 
++             installer.SetupPCSSLight();
++         }
++ #endif
+      }
+  }
+```
 
 ---
 
+主な変更点と改善点：
 
+1. アセンブリ定義ファイル（`PCSS.Core.asmdef`）の修正：
+   - UnityEngineの参照を追加
+   - `noEngineReferences`を`false`に設定（デフォルト値）
+
+2. `PCSSLightInstaller.cs`の改善：
+   - `[ExecuteInEditMode]`属性を追加してエディタでも動作するように
+   - `[DisallowMultipleComponent]`で重複を防止
+   - `[RequireComponent(typeof(VRCAvatarDescriptor))]`で依存関係を明示
+   - コンポーネントの追加処理を`GetComponent`と`AddComponent`の組み合わせに変更
+   - エディタメニューアイテムを追加（`PCSS/Setup PCSS Light`）
+
+3. 初期化タイミングの改善：
+   - `Start`を`OnEnable`に変更
+   - `Application.isPlaying`チェックを追加
+
+使用方法：
+
+1. Unity エディタで以下のいずれかの方法でコンポーネントを追加できます：
+   - インスペクタの「Add Component」から「PCSS/PCSS Light Installer」を選択
+   - メニューバーから「PCSS > Setup PCSS Light」を選択（対象のゲームオブジェクトを選択した状態で）
+
+2. アバターのルートオブジェクトに配置する必要があります（`VRCAvatarDescriptor`が必要）
+
+エラー処理：
+- コンポーネントが正しく追加できない場合は、詳細なエラーメッセージがコンソールに表示されます
+- 必要な依存コンポーネント（`VRCAvatarDescriptor`）が不足している場合は警告が表示されます
+
+これらの変更により：
+- コンポーネントの追加が可能になります
+- エディタでの操作性が向上します
+- エラーハンドリングが改善されます
+- VRCFuryとの互換性が維持されます
+
+Unity エディタでコンパイルを実行し、コンポーネントが正しく追加できるか確認してください。問題が解決しない場合は、エラーメッセージを確認の上、お知らせください。
+
+---
+
+_**User**_
+
+Can't add script component 'PCSSLightPlugin' because the script class cannot be found. Make sure that there are no compile errors and that the file name and class name match.
+
+---
+
+_**Assistant**_
+
+エラーメッセージとカーソルルールを確認しました。`PCSSLightPlugin`コンポーネントが見つからないエラーについて、以下の手順で対応します。
+
+1. まず、`PCSSLightPlugin.cs`の存在を確認します：
+
+---
+
+<details>
+            <summary>Listed directory Assets/PCSS-Shader/Scripts/Core • **4** results</summary>
+        
+| Name |
+|-------|
+| 📄 `PCSSLightInstaller.cs` |
+| 📄 `PCSS.Core.asmdef` |
+| 📄 `PCSSLightPlugin.cs` |
+| 📄 `PCSSLight.cs` |
+
+</details>
+
+---
+
+2. `PCSSLightPlugin.cs`の内容を確認します：
+
+---
+
+Read file: Assets/PCSS-Shader/Scripts/Core/PCSSLightPlugin.cs
+
+---
+
+問題が特定できました。以下の修正を行います：
+
+1. `PCSSLightPlugin.cs`のクラス定義を確認したところ、`PCSSLight`コンポーネントへの依存関係があることがわかりました。まず、`PCSSLight.cs`の内容を確認します：
+
+---
+
+Read file: Assets/PCSS-Shader/Scripts/Core/PCSSLight.cs
+
+---
+
+問題の原因と解決策が明確になりました：
+
+1. コンポーネントの依存関係：
+   - `PCSSLightPlugin`は`PCSSLight`コンポーネントに依存
+   - `PCSSLight`は`Light`コンポーネントに依存
+
+2. 正しいコンポーネント追加順序：
+   1. `Light`コンポーネント
+   2. `PCSSLight`コンポーネント
+   3. `PCSSLightPlugin`コンポーネント
+
+以下の手順で修正を行います：
 
 ---
 
