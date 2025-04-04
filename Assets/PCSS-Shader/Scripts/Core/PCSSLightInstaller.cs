@@ -6,10 +6,9 @@ using PCSS.Core;
 
 namespace PCSS.Core
 {
-    [AddComponentMenu("PCSS/PCSS Light Installer")]
+    [AddComponentMenu("PCSS/Light Installer")]
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(VRCAvatarDescriptor))]
     public class PCSSLightInstaller : MonoBehaviour
     {
         [SerializeField]
@@ -32,14 +31,19 @@ namespace PCSS.Core
 
         private VRCExpressionParameters _expressionParameters;
         private Light _light;
-        private PCSSLightPlugin _plugin;
+        private PCSSLight _pcssLight;
 
         private void OnEnable()
         {
-            if (_autoSetup && Application.isPlaying)
+            if (_autoSetup)
             {
                 SetupPCSSLight();
             }
+        }
+
+        private void Reset()
+        {
+            SetupPCSSLight();
         }
 
         private void SetupPCSSLight()
@@ -51,49 +55,50 @@ namespace PCSS.Core
                 if (_light == null)
                 {
                     _light = gameObject.AddComponent<Light>();
+                    _light.type = LightType.Directional;
+                    _light.shadows = LightShadows.Soft;
+                    _light.intensity = _defaultIntensity;
                 }
-                
-                // Lightコンポーネントの設定
-                _light.type = LightType.Directional;
-                _light.shadows = LightShadows.Soft;
 
                 // 2. PCSSLightコンポーネントのセットアップ
-                var pcssLight = gameObject.GetComponent<PCSSLight>();
-                if (pcssLight == null)
+                _pcssLight = gameObject.GetComponent<PCSSLight>();
+                if (_pcssLight == null)
                 {
-                    pcssLight = gameObject.AddComponent<PCSSLight>();
+                    _pcssLight = gameObject.AddComponent<PCSSLight>();
                 }
 
-                if (pcssLight != null)
+                if (_pcssLight != null)
                 {
-                    pcssLight.Setup();
-
-                    // 3. PCSSLightPluginコンポーネントのセットアップ
-                    _plugin = gameObject.GetComponent<PCSSLightPlugin>();
-                    if (_plugin == null)
-                    {
-                        _plugin = gameObject.AddComponent<PCSSLightPlugin>();
-                    }
-
-                    if (_plugin != null)
-                    {
-                        SetupVRCFuryParameters(_plugin);
-                        SetupToggleParameter();
-                        Debug.Log("PCSS Light setup complete with lilToon and VRCFury compatibility.", this);
-                    }
-                    else
-                    {
-                        Debug.LogError("Failed to add PCSSLightPlugin component.", this);
-                    }
+                    _pcssLight.Setup();
+                    Debug.Log($"PCSS Light setup complete on {gameObject.name}", this);
                 }
                 else
                 {
-                    Debug.LogError("Failed to add PCSSLight component.", this);
+                    Debug.LogError($"Failed to add PCSSLight component to {gameObject.name}", this);
+                }
+
+                // 3. VRChat関連のセットアップ
+                SetupVRChatComponents();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Error setting up PCSS Light on {gameObject.name}: {ex.Message}\nStackTrace: {ex.StackTrace}");
+            }
+        }
+
+        private void SetupVRChatComponents()
+        {
+            try
+            {
+                var avatar = GetComponentInParent<VRCAvatarDescriptor>();
+                if (avatar != null)
+                {
+                    SetupToggleParameter();
                 }
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"Error setting up PCSS Light: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                Debug.LogError($"Error setting up VRChat components: {ex.Message}\nStackTrace: {ex.StackTrace}");
             }
         }
 
@@ -229,6 +234,13 @@ namespace PCSS.Core
                 return;
             }
 
+            var avatarDescriptor = selection.GetComponent<VRCAvatarDescriptor>();
+            if (avatarDescriptor == null)
+            {
+                Debug.LogError("選択されたオブジェクトにVRCAvatarDescriptorがありません。アバターのルートオブジェクトを選択してください。");
+                return;
+            }
+
             var installer = selection.GetComponent<PCSSLightInstaller>();
             if (installer == null)
             {
@@ -236,6 +248,7 @@ namespace PCSS.Core
             }
 
             installer.SetupPCSSLight();
+            UnityEditor.EditorUtility.SetDirty(selection);
         }
 #endif
 
@@ -267,12 +280,12 @@ namespace PCSS.Core
         {
             try
             {
-                if (_plugin != null)
+                if (_pcssLight != null)
                 {
                     // シェーダーキーワードとパラメータの整合性チェック
                     bool isEnabled = Shader.IsKeywordEnabled("_PCSS_ON");
                     float intensity = Shader.GetGlobalFloat("_PCSSIntensity");
-                    float toggleValue = _plugin.GetParameterValue(_toggleParameterName);
+                    float toggleValue = _pcssLight.GetParameterValue(_toggleParameterName);
 
                     if (!isEnabled)
                     {

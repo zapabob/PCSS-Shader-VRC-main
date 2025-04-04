@@ -6,9 +6,9 @@ using UnityEngine.Rendering;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 
-namespace PCSS.Core // Changed namespace to PCSS.Core
+namespace PCSS.Core
 {
-    [AddComponentMenu("PCSS/PCSS Light")]
+    [AddComponentMenu("PCSS/Light Core")]
     [ExecuteInEditMode]
     [RequireComponent(typeof(Light))]
     public class PCSSLight : MonoBehaviour
@@ -83,12 +83,17 @@ namespace PCSS.Core // Changed namespace to PCSS.Core
         private bool _isVRCFuryInitialized = false;
         private VRCAvatarDescriptor _avatarDescriptor;
 
-        private void Start()
+        private void Awake()
         {
             if (!isSetup)
             {
                 Setup();
             }
+        }
+
+        private void Reset()
+        {
+            Setup();
         }
 
         public void Setup()
@@ -98,7 +103,7 @@ namespace PCSS.Core // Changed namespace to PCSS.Core
                 lightComponent = GetComponent<Light>();
                 if (lightComponent == null)
                 {
-                    Debug.LogError("Light component not found on PCSS Light object.");
+                    Debug.LogError("Light component not found. PCSSLight requires a Light component.", this);
                     return;
                 }
 
@@ -106,38 +111,53 @@ namespace PCSS.Core // Changed namespace to PCSS.Core
                 _avatarDescriptor = GetComponentInParent<VRCAvatarDescriptor>();
                 if (_avatarDescriptor == null)
                 {
-                    Debug.LogWarning("PCSSLight should be placed on an avatar with VRCAvatarDescriptor.");
+                    Debug.LogWarning("PCSSLight should be placed on an avatar with VRCAvatarDescriptor.", this);
                 }
 
-                InitializeVRCFuryCompatibility();
+                // 基本設定の初期化
+                if (noiseTexture == null)
+                {
+                    noiseTexture = new Texture2D(64, 64, TextureFormat.R8, false)
+                    {
+                        filterMode = FilterMode.Bilinear,
+                        wrapMode = TextureWrapMode.Repeat
+                    };
+                    // ノイズテクスチャの生成（簡単なランダムノイズ）
+                    Color[] pixels = new Color[64 * 64];
+                    for (int i = 0; i < pixels.Length; i++)
+                    {
+                        pixels[i] = new Color(Random.value, Random.value, Random.value, 1);
+                    }
+                    noiseTexture.SetPixels(pixels);
+                    noiseTexture.Apply();
+                }
 
                 resolution = Mathf.ClosestPowerOfTwo(resolution);
                 if (customShadowResolution)
-                    lightComponent.shadowCustomResolution = resolution;
-                else
-                    lightComponent.shadowCustomResolution = 0;
-
-                shadowmapPropID = Shader.PropertyToID("_ShadowMap");
-
-                if (copyShadowBuffer != null)
                 {
-                    lightComponent.RemoveCommandBuffer(lightEvent, copyShadowBuffer);
+                    lightComponent.shadowCustomResolution = resolution;
                 }
 
-                copyShadowBuffer = new CommandBuffer();
-                copyShadowBuffer.name = "PCSS Shadows";
-
-                lightComponent.AddCommandBuffer(lightEvent, copyShadowBuffer);
-
+                // シャドウマップの設定
+                shadowmapPropID = Shader.PropertyToID("_ShadowMap");
                 CreateShadowRenderTexture();
+
+                // コマンドバッファの設定
+                SetupCommandBuffer();
+
+                // VRCFury互換性の初期化
+                InitializeVRCFuryCompatibility();
+
+                // シェーダー値の更新
                 UpdateShaderValues();
-                UpdateCommandBuffer();
 
                 isSetup = true;
+                Debug.Log($"PCSS Light Core setup complete on {gameObject.name}", this);
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"Error in PCSS Light Setup: {ex.Message}");
+                Debug.LogError($"Error in PCSS Light Setup on {gameObject.name}: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                isSetup = false;
             }
         }
 
@@ -361,6 +381,29 @@ namespace PCSS.Core // Changed namespace to PCSS.Core
                 UpdateShaderValues();
                 UpdateCommandBuffer();
             }
+        }
+
+        private void SetupCommandBuffer()
+        {
+            if (copyShadowBuffer != null)
+            {
+                lightComponent.RemoveCommandBuffer(lightEvent, copyShadowBuffer);
+            }
+
+            copyShadowBuffer = new CommandBuffer();
+            copyShadowBuffer.name = "PCSS Shadows";
+            lightComponent.AddCommandBuffer(lightEvent, copyShadowBuffer);
+        }
+
+        public float GetParameterValue(string paramName)
+        {
+            if (paramName == PCSS_ENABLED_PARAM)
+                return enabled ? 1f : 0f;
+            if (paramName == PCSS_INTENSITY_PARAM)
+                return lightComponent ? lightComponent.intensity : 0f;
+            if (paramName == PCSS_SOFTNESS_PARAM)
+                return Softness;
+            return 0f;
         }
     }
 }
