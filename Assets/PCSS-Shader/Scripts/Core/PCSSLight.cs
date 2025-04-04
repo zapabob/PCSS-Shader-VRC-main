@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-using nadena.dev.modular_avatar.core;
+// using nadena.dev.modular_avatar.core; // Removed as MA setup is handled by PCSSLightPlugin
 using VRC.SDK3.Avatars.Components;
 
-namespace PCSSShader.Core
+namespace PCSS.Core // Changed namespace to PCSS.Core
 {
     [AddComponentMenu("PCSS/PCSS Light")]
     [RequireComponent(typeof(Light))]
@@ -70,36 +70,9 @@ namespace PCSSShader.Core
         private RenderTexture shadowMap;
         private bool isSetup = false;
 
-        private void OnEnable()
-        {
-            // モジュラーアバター対応のセットアップ
-            SetupModularAvatarComponents();
-        }
-
-        private void SetupModularAvatarComponents()
-        {
-            // MAParameterの設定がまだない場合は追加
-            var maParam = GetComponent<MAParameter>();
-            if (maParam == null)
-            {
-                maParam = gameObject.AddComponent<MAParameter>();
-                maParam.nameOrPrefix = "PCSS_Quality";
-                maParam.syncType = VRCExpressionParameters.ValueType.Int;
-                maParam.defaultValue = (int)MSAA;
-                maParam.saved = true;
-            }
-
-            // MASaveParamの設定
-            var maSave = GetComponent<MASaveParam>();
-            if (maSave == null)
-            {
-                maSave = gameObject.AddComponent<MASaveParam>();
-                maSave.parameter = "PCSS_Quality";
-                maSave.defaultValue = (int)MSAA;
-                maSave.syncWithOtherParams = true;
-            }
-        }
-
+        // Added to support mirror state notification from PCSSLightPlugin
+        private bool _isInMirror = false;
+        
         private void Start()
         {
             if (!isSetup)
@@ -295,6 +268,19 @@ namespace PCSSShader.Core
             if (lightComponent && copyShadowBuffer != null)
             {
                 lightComponent.RemoveCommandBuffer(lightEvent, copyShadowBuffer);
+            }
+        }
+
+        // Added to support mirror state notification from PCSSLightPlugin
+        public void SetMirrorState(bool inMirror)
+        {
+            if (_isInMirror != inMirror)
+            {
+                _isInMirror = inMirror;
+                // If mirror state changes, we may need to update rendering
+                // This is a simplified implementation - add mirror-specific logic as needed
+                UpdateShaderValues();
+                UpdateCommandBuffer();
             }
         }
     }

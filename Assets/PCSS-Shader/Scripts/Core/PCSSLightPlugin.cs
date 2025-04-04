@@ -5,402 +5,472 @@ using System;
 using System.Collections.Generic;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
-using nadena.dev.modular_avatar.core;
+using VRC.SDK3.Avatars.ScriptableObjects;
+using UnityEngine.SceneManagement;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace PCSSShader.Core
+namespace PCSS.Core
 {
     [AddComponentMenu("PCSS/PCSS Light Plugin")]
     [ExecuteInEditMode]
+    [RequireComponent(typeof(Light))]
+    [RequireComponent(typeof(PCSSLight))]
     public class PCSSLightPlugin : MonoBehaviour
     {
-        [Header("モジュラーアバター設定")]
-        [SerializeField] private bool preserveOnAutoFix = true;
-        [SerializeField] private bool syncWithMirror = true;
+        private const float PCSS_EFFECT_NEAR_DISTANCE = 10.0f;
+        private const float PCSS_EFFECT_FADE_DISTANCE = 5.0f;
+        private const float PCSS_EFFECT_FAR_DISTANCE = PCSS_EFFECT_NEAR_DISTANCE + PCSS_EFFECT_FADE_DISTANCE;
+        private const int MAX_SHADOW_STRENGTH_CACHE = 100;
+        private const string MIRROR_REFLECTION_LAYER_NAME = "MirrorReflection";
+        private const string PCSS_ENABLED_PARAMETER_NAME = "PCSS_Light_Enabled";
 
-        [Header("PCSS設定")]
+        [Header("PCSS 設定")]
+        [Tooltip("シャドウマップの解像度。カスタム解像度を使用する場合に適用されます。")]
         public int resolution = 4096;
+        [Tooltip("Unityのデフォルト解像度ではなく、上記の解像度設定を使用します。")]
         public bool customShadowResolution = false;
 
+        [Tooltip("影の生成をブロックするオブジェクト（ブロッカー）を検出するためのサンプル数。")]
         [Range(1, 64)]
         public int blockerSampleCount = 16;
+        [Tooltip("PCF（Percentage-Closer Filtering）による影のエッジを滑らかにするためのサンプル数。")]
         [Range(1, 64)]
         public int PCFSampleCount = 16;
 
+        [Tooltip("影の計算にランダム性を加えるためのノイズテクスチャ。")]
         public Texture2D noiseTexture;
 
+        [Tooltip("影の全体的な柔らかさ。")]
         [Range(0f, 1f)]
         public float softness = 0.5f;
+        [Tooltip("影のブロッキングを検出する範囲（半径）。")]
         [Range(0f, 1f)]
         public float sampleRadius = 0.02f;
 
+        [Tooltip("静的な表面でのシャドウアクネ（自己遮蔽による縞模様）を軽減するためのバイアス。")]
         [Range(0f, 1f)]
         public float maxStaticGradientBias = 0.05f;
+        [Tooltip("ブロッカー検索時のシャドウアクネを軽減するためのバイアス。")]
         [Range(0f, 1f)]
         public float blockerGradientBias = 0f;
+        [Tooltip("PCF計算時のシャドウアクネを軽減するためのバイアス。")]
         [Range(0f, 1f)]
         public float PCFGradientBias = 1f;
 
+        [Tooltip("カスケードシャドウマップを使用する場合の、異なるカスケード間のブレンド距離。")]
         [Range(0f, 1f)]
         public float cascadeBlendDistance = 0.5f;
 
+        [Tooltip("正射影（Orthographic）カメラでの描画をサポートします。")]
         public bool supportOrthographicProjection;
 
-        private RenderTexture shadowRenderTexture;
-        private RenderTextureFormat format = RenderTextureFormat.RFloat;
-        private FilterMode filterMode = FilterMode.Bilinear;
+        private RenderTexture _shadowRenderTexture;
+        private readonly RenderTextureFormat _format = RenderTextureFormat.RFloat;
+        private readonly FilterMode _filterMode = FilterMode.Bilinear;
 
-        private int shadowmapPropID;
-        private CommandBuffer copyShadowBuffer;
-        private Light lightComponent;
-        private VRCAvatarDescriptor avatarDescriptor;
-        private MAComponent maComponent;
-        private MAParameter maParameter;
-        private MAMergeAnimator maMergeAnimator;
+        private int _shadowmapPropID;
+        private CommandBuffer _copyShadowBuffer;
 
-        private readonly Dictionary<int, float> shadowStrengthCache = new Dictionary<int, float>();
-        private const int MaxShadowStrengthCache = 1000;
+        private Light _lightComponent;
+        private PCSSLight _pcssLight;
+        private VRCAvatarDescriptor _localAvatarDescriptor;
 
-        private PCSSLight pcssLight;
-        private bool isInitialized = false;
-        private bool isInMirror = false;
+        private readonly Dictionary<int, float> _shadowStrengthCache = new Dictionary<int, float>();
+        private bool _isInitialized = false;
+        private bool _isInMirror = false;
+        private int _mirrorLayer = -1;
+
+        private void Awake()
+        {
+            _lightComponent = GetComponent<Light>();
+            _pcssLight = GetComponent<PCSSLight>();
+            _shadowmapPropID = Shader.PropertyToID("_PCSShadowMap");
+            _mirrorLayer = LayerMask.NameToLayer(MIRROR_REFLECTION_LAYER_NAME);
+
+            if (_pcssLight == null)
+            {
+                Debug.LogError("PCSSLight component not found. Disabling PCSSLightPlugin.", this);
+                enabled = false;
+            }
+            if (_lightComponent == null)
+            {
+                Debug.LogError("Light component not found. Disabling PCSSLightPlugin.", this);
+                enabled = false;
+            }
+        }
 
         private void Start()
         {
-            pcssLight = GetComponent<PCSSLight>();
-            if (!isInitialized)
+            if (enabled && !_isInitialized)
             {
-                InitializePCSSLight();
-            }
-        }
-
-        private void InitializePCSSLight()
-        {
-            if (pcssLight != null)
-            {
-                pcssLight.Setup();
-                isInitialized = true;
-            }
-        }
-
-        private void OnDestroy()
-        {
-            try
-            {
-                if (pcssLight != null)
-                {
-                    pcssLight.DestroyShadowRenderTexture();
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"Error destroying PCSS Light shadow render texture: {ex.Message}");
-            }
-        }
-
-        private void Update()
-        {
-            try
-            {
-                if (pcssLight != null)
-                {
-                    // ミラー内での処理を最適化
-                    var currentIsInMirror = Networking.LocalPlayer?.IsUserInVR() == true && 
-                                          gameObject.layer == LayerMask.NameToLayer("MirrorReflection");
-                    
-                    if (currentIsInMirror != isInMirror)
-                    {
-                        isInMirror = currentIsInMirror;
-                        pcssLight.Setup(); // ミラー状態が変わった時に再セットアップ
-                    }
-
-                    pcssLight.UpdateShaderValues();
-                    pcssLight.UpdateCommandBuffer();
-                }
-
-                // アバターの距離に基づいてPCSSの効果を更新
-                UpdatePCSSEffect();
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"Error updating PCSS Light: {ex.Message}");
-            }
-        }
-
-        private void UpdatePCSSEffect()
-        {
-            try
-            {
-                if (avatarDescriptor == null)
-                {
-                    avatarDescriptor = GetAvatarDescriptor();
-                }
-
-                if (avatarDescriptor != null && preserveOnAutoFix)
-                {
-                    int ownerID = avatarDescriptor.ownerId;
-                    float distance = Vector3.Distance(transform.position, avatarDescriptor.gameObject.transform.position);
-
-                    if (distance <= 10.0f)
-                    {
-                        // PCSSの効果を適用
-                        UpdateShaderProperties();
-                    }
-                    else
-                    {
-                        // PCSSの効果を徐々に減衰させる
-                        if (!shadowStrengthCache.TryGetValue(ownerID, out float shadowStrength))
-                        {
-                            shadowStrength = 1.0f;
-                        }
-
-                        float t = Mathf.Clamp01((distance - 10.0f) / 5.0f);
-                        shadowStrength = Mathf.Lerp(shadowStrength, 0.0f, t);
-                        shadowStrengthCache[ownerID] = shadowStrength;
-
-                        // キャッシュのサイズを制限
-                        if (shadowStrengthCache.Count > MaxShadowStrengthCache)
-                        {
-                            int oldestOwnerID = 0;
-                            float oldestAccessTime = float.MaxValue;
-                            foreach (var pair in shadowStrengthCache)
-                            {
-                                if (pair.Value < oldestAccessTime)
-                                {
-                                    oldestOwnerID = pair.Key;
-                                    oldestAccessTime = pair.Value;
-                                }
-                            }
-                            shadowStrengthCache.Remove(oldestOwnerID);
-                        }
-
-                        Shader.SetGlobalFloat("_PCSShadowStrength", shadowStrength);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error updating PCSS effect: {e.Message}");
+                InitializePCSS();
             }
         }
 
         private void OnEnable()
         {
-            if (Application.isPlaying)
+            if (enabled && !_isInitialized)
             {
-                SetupLight();
-                SetupModularAvatar();
+                InitializePCSS();
+            }
+            else if (enabled && _isInitialized)
+            {
+                SetupLightComponentResources();
+                AddCommandBuffer();
             }
         }
 
         private void OnDisable()
         {
-            if (Application.isPlaying)
-            {
-                CleanupLight();
-            }
+            CleanupLightComponentResources();
+            _isInitialized = false;
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         private void OnValidate()
         {
-            if (!Application.isPlaying)
-            {
-                SetupLight();
-                SetupModularAvatar();
-            }
+            if (_lightComponent == null) _lightComponent = GetComponent<Light>();
+            if (_pcssLight == null) _pcssLight = GetComponent<PCSSLight>();
 
-            // コンポーネントの依存関係チェック
-            var avatar = GetComponent<VRCAvatarDescriptor>();
-            if (avatar == null)
+            if (isActiveAndEnabled && _lightComponent != null && _pcssLight != null)
             {
-                Debug.LogWarning("VRCAvatarDescriptorが見つかりません。アバターのルートに配置してください。");
-            }
-        }
-        #endif
-
-        private void SetupModularAvatar()
-        {
-            try
-            {
-                // モジュラーアバター用の永続化設定
-                if (maComponent == null)
+                UnityEditor.EditorApplication.delayCall += () =>
                 {
-                    maComponent = gameObject.AddComponent<MAComponent>();
-                    maComponent.pathMode = VRCAvatarDescriptor.PathMode.Absolute;
-                    maComponent.ignoreObjectScale = true;
-                }
+                    if (this == null || _lightComponent == null || _pcssLight == null) return;
 
-                // AutoFix対策
-                if (preserveOnAutoFix)
-                {
-                    if (maParameter == null)
-                    {
-                        maParameter = gameObject.AddComponent<MAParameter>();
-                        maParameter.nameOrPrefix = "PCSS_Light_Enabled";
-                        maParameter.syncType = VRCExpressionParameters.ValueType.Bool;
-                        maParameter.defaultValue = 1;
-                        maParameter.saved = true;
-                    }
-
-                    // ミラー同期対策
-                    if (syncWithMirror && maMergeAnimator == null)
-                    {
-                        maMergeAnimator = gameObject.AddComponent<MAMergeAnimator>();
-                        maMergeAnimator.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
-                        maMergeAnimator.pathMode = VRCAvatarDescriptor.PathMode.Absolute;
-                        maMergeAnimator.deleteAttachedAnimator = true;
-                    }
-                }
+                    SetupLightComponentSettings();
+                    RecreateRenderTextureIfNeeded();
+                    UpdateShaderProperties();
+                    UpdateCommandBuffer();
+                    _pcssLight.Setup();
+                    if (!_isInitialized) _isInitialized = true;
+                    Debug.Log("PCSSLightPlugin settings validated and applied.", this);
+                };
             }
-            catch (Exception e)
+
+            if (GetComponentInParent<VRCAvatarDescriptor>(true) == null)
             {
-                Debug.LogError($"Error setting up Modular Avatar components: {e.Message}");
+                Debug.LogWarning("PCSSLightPlugin is recommended to be on a GameObject within a VRCAvatarDescriptor hierarchy.", this);
             }
         }
+#endif
 
-        private void SetupLight()
+        private void Update()
         {
+            if (!_isInitialized || !enabled) return;
+
             try
             {
-                lightComponent = GetComponent<Light>();
-                if (lightComponent == null)
+                bool currentIsInMirror = IsInMirror();
+                if (currentIsInMirror != _isInMirror)
                 {
-                    Debug.LogError("PCSSLightPlugin requires a Light component.");
-                    return;
+                    _isInMirror = currentIsInMirror;
+                    _pcssLight.SetMirrorState(_isInMirror);
                 }
 
-                if (customShadowResolution)
-                {
-                    lightComponent.shadowCustomResolution = resolution;
-                }
-                else
-                {
-                    lightComponent.shadowCustomResolution = 0;
-                }
-
-                shadowmapPropID = Shader.PropertyToID("_PCSShadowMap");
-                copyShadowBuffer = new CommandBuffer();
-                copyShadowBuffer.name = "PCSS Shadow Copy";
-
-                lightComponent.AddCommandBuffer(LightEvent.AfterShadowMap, copyShadowBuffer);
-
-                if (shadowRenderTexture == null ||
-                    shadowRenderTexture.width != resolution ||
-                    shadowRenderTexture.height != resolution ||
-                    shadowRenderTexture.format != format)
-                {
-                    if (shadowRenderTexture != null)
-                    {
-                        shadowRenderTexture.Release();
-                        DestroyImmediate(shadowRenderTexture);
-                    }
-
-                    shadowRenderTexture = new RenderTexture(resolution, resolution, 0, format);
-                    shadowRenderTexture.filterMode = filterMode;
-                    shadowRenderTexture.useMipMap = false;
-                    shadowRenderTexture.Create();
-                }
+                _pcssLight.UpdateShaderValues();
+                _pcssLight.UpdateCommandBuffer();
 
                 UpdateShaderProperties();
                 UpdateCommandBuffer();
+
+                UpdatePCSSEffectBasedOnDistance();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.LogError($"Error setting up PCSS light: {e.Message}");
+                Debug.LogError($"Error during PCSSLightPlugin Update: {ex.Message}\n{ex.StackTrace}", this);
             }
         }
 
-        private void CleanupLight()
+        private void InitializePCSS()
         {
+            if (_isInitialized || !enabled) return;
+            if (_lightComponent == null || _pcssLight == null)
+            {
+                Debug.LogError("Cannot initialize PCSS: Missing Light or PCSSLight component.", this);
+                enabled = false;
+                return;
+            }
+
+            Debug.Log("Initializing PCSSLightPlugin...", this);
             try
             {
-                if (lightComponent != null)
-                {
-                    lightComponent.RemoveCommandBuffer(LightEvent.AfterShadowMap, copyShadowBuffer);
-                }
-
-                if (shadowRenderTexture != null)
-                {
-                    shadowRenderTexture.Release();
-                    DestroyImmediate(shadowRenderTexture);
-                    shadowRenderTexture = null;
-                }
-
-                shadowStrengthCache.Clear();
+                _pcssLight.Setup();
+                SetupLightComponentSettings();
+                SetupLightComponentResources();
+                AddCommandBuffer();
+                _isInitialized = true;
+                Debug.Log("PCSSLightPlugin Initialized Successfully.", this);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.LogError($"Error cleaning up PCSS light: {e.Message}");
+                Debug.LogError($"Failed to initialize PCSSLightPlugin: {ex.Message}\n{ex.StackTrace}", this);
+                CleanupLightComponentResources();
+                _isInitialized = false;
+                enabled = false;
+            }
+        }
+
+        private void SetupLightComponentSettings()
+        {
+            if (_lightComponent == null) return;
+
+            if (customShadowResolution)
+            {
+                resolution = Mathf.Max(32, resolution);
+                _lightComponent.shadowCustomResolution = resolution;
+            }
+            else
+            {
+                _lightComponent.shadowCustomResolution = 0;
+            }
+            if (_lightComponent.shadows == LightShadows.None)
+            {
+                Debug.LogWarning("PCSSLightPlugin requires shadows to be enabled on the Light component. Setting to Hard Shadows.", this);
+                _lightComponent.shadows = LightShadows.Hard;
+            }
+        }
+
+        private void SetupLightComponentResources()
+        {
+            if (_lightComponent == null) return;
+
+            if (_copyShadowBuffer == null)
+            {
+                _copyShadowBuffer = new CommandBuffer { name = "PCSS Shadow Copy" };
+            }
+
+            RecreateRenderTextureIfNeeded();
+        }
+
+        private void AddCommandBuffer()
+        {
+            if (_lightComponent != null && _copyShadowBuffer != null)
+            {
+                _lightComponent.RemoveCommandBuffer(LightEvent.AfterShadowMap, _copyShadowBuffer);
+                _lightComponent.AddCommandBuffer(LightEvent.AfterShadowMap, _copyShadowBuffer);
+            }
+        }
+
+        private void CleanupLightComponentResources()
+        {
+            if (_lightComponent != null && _copyShadowBuffer != null)
+            {
+                try
+                {
+                    _lightComponent.RemoveCommandBuffer(LightEvent.AfterShadowMap, _copyShadowBuffer);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"Ignoring error removing command buffer: {e.Message}");
+                }
+            }
+
+            CleanupRenderTexture();
+
+            _shadowStrengthCache.Clear();
+        }
+
+        private int GetCurrentShadowResolution()
+        {
+            if (_lightComponent == null) return 0;
+            
+            if (_lightComponent.shadowCustomResolution > 0)
+                return _lightComponent.shadowCustomResolution;
+                
+            switch (QualitySettings.shadowResolution)
+            {
+                case ShadowResolution.Low:
+                    return 1024;
+                case ShadowResolution.Medium:
+                    return 2048;
+                case ShadowResolution.High:
+                    return 4096;
+                case ShadowResolution.VeryHigh:
+                    return 8192;
+                default:
+                    return 2048;
+            }
+        }
+
+        private void RecreateRenderTextureIfNeeded()
+        {
+            if (_lightComponent == null) return;
+
+            int currentResolution = GetCurrentShadowResolution();
+            if (currentResolution <= 0) {
+                currentResolution = 512;
+                Debug.LogWarning("Could not determine valid shadow resolution. Using fallback: " + currentResolution, this);
+            }
+
+            bool needsRecreation = _shadowRenderTexture == null ||
+                                   _shadowRenderTexture.width != currentResolution ||
+                                   _shadowRenderTexture.height != currentResolution ||
+                                   _shadowRenderTexture.format != _format ||
+                                   !_shadowRenderTexture.IsCreated();
+
+            if (needsRecreation)
+            {
+                CleanupRenderTexture();
+
+                try
+                {
+                    _shadowRenderTexture = new RenderTexture(currentResolution, currentResolution, 0, _format)
+                    {
+                        filterMode = _filterMode,
+                        useMipMap = false,
+                        autoGenerateMips = false,
+                        name = "PCSS Shadow Copy RT " + GetInstanceID()
+                    };
+
+                    if (!_shadowRenderTexture.Create())
+                    {
+                        Debug.LogError("Failed to create PCSS shadow RenderTexture.", this);
+                        CleanupRenderTexture();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error creating PCSS shadow RenderTexture: {e.Message}\n{e.StackTrace}", this);
+                    CleanupRenderTexture();
+                }
+            }
+        }
+
+        private void CleanupRenderTexture()
+        {
+            if (_shadowRenderTexture != null)
+            {
+                if (_shadowRenderTexture.IsCreated())
+                {
+                    _shadowRenderTexture.Release();
+                }
+                if (Application.isPlaying)
+                    Destroy(_shadowRenderTexture);
+                else
+                    DestroyImmediate(_shadowRenderTexture);
+
+                _shadowRenderTexture = null;
             }
         }
 
         private void UpdateShaderProperties()
         {
+            if (!enabled) return;
             try
             {
                 Shader.SetGlobalInt("_PCSSBlockerSampleCount", blockerSampleCount);
                 Shader.SetGlobalInt("_PCSSPCFSampleCount", PCFSampleCount);
-
                 Shader.SetGlobalFloat("_PCSSoftness", softness);
                 Shader.SetGlobalFloat("_PCSSSampleRadius", sampleRadius);
-
                 Shader.SetGlobalFloat("_PCSSMaxStaticGradientBias", maxStaticGradientBias);
                 Shader.SetGlobalFloat("_PCSSBlockerGradientBias", blockerGradientBias);
                 Shader.SetGlobalFloat("_PCSSPCFGradientBias", PCFGradientBias);
-
                 Shader.SetGlobalFloat("_PCSSCascadeBlendDistance", cascadeBlendDistance);
+                Shader.SetGlobalInt("_PCSSupportOrthographicProjection", supportOrthographicProjection ? 1 : 0);
 
                 if (noiseTexture != null)
                 {
-                    Shader.SetGlobalVector("_PCSSNoiseCoords", new Vector4(1f / noiseTexture.width, 1f / noiseTexture.height, 0f, 0f));
+                    Vector4 noiseCoords = Vector4.zero;
+                    if (noiseTexture.width > 0 && noiseTexture.height > 0)
+                    {
+                        noiseCoords = new Vector4(1.0f / noiseTexture.width, 1.0f / noiseTexture.height, 0f, 0f);
+                    }
+                    Shader.SetGlobalVector("_PCSSNoiseCoords", noiseCoords);
                     Shader.SetGlobalTexture("_PCSSNoiseTexture", noiseTexture);
                 }
-
-                Shader.SetGlobalInt("_PCSSupportOrthographicProjection", supportOrthographicProjection ? 1 : 0);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Error updating shader properties: {e.Message}");
+                Debug.LogError($"Error updating global shader properties: {e.Message}\n{e.StackTrace}", this);
             }
         }
 
         private void UpdateCommandBuffer()
         {
+            if (!enabled || _copyShadowBuffer == null || _shadowRenderTexture == null || !_shadowRenderTexture.IsCreated())
+            {
+                return;
+            }
+
             try
             {
-                copyShadowBuffer.Clear();
-                copyShadowBuffer.SetShadowSamplingMode(BuiltinRenderTextureType.CurrentActive, ShadowSamplingMode.RawDepth);
-                copyShadowBuffer.Blit(BuiltinRenderTextureType.CurrentActive, shadowRenderTexture);
-                copyShadowBuffer.SetGlobalTexture(shadowmapPropID, shadowRenderTexture);
+                _copyShadowBuffer.Clear();
+                _copyShadowBuffer.SetShadowSamplingMode(BuiltinRenderTextureType.CurrentActive, ShadowSamplingMode.RawDepth);
+                _copyShadowBuffer.Blit(BuiltinRenderTextureType.CurrentActive, new RenderTargetIdentifier(_shadowRenderTexture));
+                _copyShadowBuffer.SetGlobalTexture(_shadowmapPropID, new RenderTargetIdentifier(_shadowRenderTexture));
             }
             catch (Exception e)
             {
-                Debug.LogError($"Error updating command buffer: {e.Message}");
+                Debug.LogError($"Error updating PCSS command buffer: {e.Message}\n{e.StackTrace}", this);
             }
         }
 
-        private VRCAvatarDescriptor GetAvatarDescriptor()
+        private void UpdatePCSSEffectBasedOnDistance()
         {
+            float shadowStrength = 1.0f;
             try
             {
-                VRCAvatarDescriptor[] avatarDescriptors = FindObjectsOfType<VRCAvatarDescriptor>();
-                foreach (VRCAvatarDescriptor descriptor in avatarDescriptors)
+                if (_localAvatarDescriptor == null)
                 {
-                    if (descriptor.gameObject.activeInHierarchy)
+                    _localAvatarDescriptor = GetLocalPlayerAvatarDescriptor();
+                }
+
+                if (_localAvatarDescriptor != null)
+                {
+                    float distance = Vector3.Distance(transform.position, _localAvatarDescriptor.transform.position);
+
+                    if (distance <= PCSS_EFFECT_NEAR_DISTANCE)
                     {
-                        return descriptor;
+                        shadowStrength = 1.0f;
+                    }
+                    else if (distance < PCSS_EFFECT_FAR_DISTANCE)
+                    {
+                        float t = Mathf.InverseLerp(PCSS_EFFECT_NEAR_DISTANCE, PCSS_EFFECT_FAR_DISTANCE, distance);
+                        shadowStrength = Mathf.Lerp(1.0f, 0.0f, t);
+                    }
+                    else
+                    {
+                        shadowStrength = 0.0f;
                     }
                 }
+
+                Shader.SetGlobalFloat("_PCSShadowStrength", shadowStrength);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Error getting avatar descriptor: {e.Message}");
+                Debug.LogError($"Error updating PCSS effect based on distance: {e.Message}\n{e.StackTrace}", this);
+                Shader.SetGlobalFloat("_PCSShadowStrength", 1.0f);
             }
+        }
+
+        private VRCAvatarDescriptor GetLocalPlayerAvatarDescriptor()
+        {
+            VRCPlayerApi localPlayer = Networking.LocalPlayer;
+            if (localPlayer == null) return null;
+
+            VRCAvatarDescriptor[] allDescriptors = FindObjectsOfType<VRCAvatarDescriptor>();
+            foreach (VRCAvatarDescriptor descriptor in allDescriptors)
+            {
+                var vrcPlayer = descriptor.GetComponentInParent<VRC.SDKBase.VRCPlayerApi>();
+                if (vrcPlayer != null && vrcPlayer.playerId == localPlayer.playerId)
+                {
+                    return descriptor;
+                }
+            }
+
             return null;
+        }
+
+        private bool IsInMirror()
+        {
+            bool inVR = Networking.LocalPlayer?.IsUserInVR() ?? false;
+            bool onMirrorLayer = (_mirrorLayer != -1) && (gameObject.layer == _mirrorLayer);
+
+            return inVR && onMirrorLayer;
         }
     }
 }

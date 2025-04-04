@@ -1,11 +1,11 @@
 {
     "name": "PCSS.Utils",
+    "rootNamespace": "PCSSShader.Utils",
     "references": [
-        "PCSS.Core",
-        "VRC.SDK3.Avatars.Components",
-        "VRC.SDKBase",
-        "nadena.dev.modular-avatar.core",
-        "nadena.dev.ndmf"
+        "GUID:5718fb738711cd34ea54e9553040911d",
+        "GUID:80a8b162ac804404bae7b5fdc3041428",
+        "GUID:6490804aa441dfe4b88eb56cccbdf081",
+        "GUID:fc900867c0f47cd49b6e2ae4ef907300"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

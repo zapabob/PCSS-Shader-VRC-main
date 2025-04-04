@@ -1,24 +1,21 @@
 {
     "name": "PCSS.Core",
-    "rootNamespace": "PCSSShader.Core",
+    "rootNamespace": "PCSS.Core",
     "references": [
-        "GUID:fe685ec1767f73d42b749ea8045bfe43",
-        "GUID:3456780c4fb2d324ab9c633d6f1b0ddb",
-        "GUID:5718fb738711cd34ea54e9553040911d",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:6546d7765b4165b40850b3667f981c26",
         "GUID:80a8b162ac804404bae7b5fdc3041428",
-        "GUID:5718fb738711cd34ea54e9553040911d",
-        "GUID:80a8b162ac804404bae7b5fdc3041428",
-        "GUID:f906c2a150fbb5f4caf3d865fb42f9b2",
-        "GUID:fc900867c0f47cd49b6e2ae4ef907300",
-        "VRC.SDK3.Avatars.Components",
-        "nadena.dev.modular-avatar.core",
-        "nadena.dev.ndmf"
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "VRCSDKBase.dll",
+        "VRCSDK3A.dll",
+        "VRC.Dynamics.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],

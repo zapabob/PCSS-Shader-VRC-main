@@ -1,6 +1,6 @@
 
 ## PROJECT OVERVIEW
-This project aims to develop a high-quality PCSS shader for VRChat, compatible with modular avatars and resistant to AutoFIX removal.  The shader will provide improved lighting and shadows within the VRChat environment.  The shader must be compatible with VRCFury's auto-correction features. The shader must maintain functionality even when the avatar is rebuilt.
+This project aims to develop a high-quality PCSS shader for VRChat, compatible with modular avatars and resistant to AutoFIX removal.  The shader will provide improved lighting and shadows within the VRChat environment.  The shader must be compatible with VRCFury's auto-correction features. The shader must maintain functionality even when the avatar is rebuilt.  The project incorporates nadena.dev.modular_avatar.core and nadena.dev.ndmf for robust modular avatar support and AutoFIX resistance, leveraging VRCFury's features for parameter persistence and mirror synchronization where appropriate.  The project structure is organized to improve maintainability and follow Unity best practices.  All scripts must be designed to work seamlessly with modular avatars and resist removal by VRChat's AutoFIX feature. Implementations should leverage VRCFury's features for parameter persistence and mirror synchronization.  The project now utilizes a more organized folder structure to improve maintainability and clarity.  The project is structured to facilitate Modular Avatar compatibility and AutoFIX resistance.  All shaders and scripts are designed for seamless integration with modular avatar systems and to prevent removal by VRChat's AutoFIX feature.
 
 ## CODE STYLE
 Adhere to C# coding conventions.  Maintain consistent indentation and naming conventions.
@@ -18,7 +18,7 @@ Assets/
     │   └── Utils/
     │       ├── PoissonTools.cs          # ポアソンディスク計算
     │       ├── SetCameraDepth.cs        # カメラ深度設定
-    │       └── PCSS.Utils.asmdef        # ユーティリティのアセンブリ定義
+    │       └── PCSS.Utils.asmdef         # ユーティリティのアセンブリ定義
     ├── Shaders/
     │   ├── PCSSLiltoonShader.shader    # PCSSシェーダー
     │   └── PCSS.Shaders.asmdef         # シェーダーのアセンブリ定義
@@ -51,12 +51,22 @@ This structure groups related files logically, clarifies dependencies, simplifie
 - Releases should be versioned and documented.
 
 ## REFERENCE EXAMPLES
-- Refer to the `PCSSLightHandler.cs` and `PCSSLight.cs` files for example implementations of modular avatar compatibility and AutoFIX resistance. These files utilize nadena.dev.modular_avatar.core and nadena.dev.ndmf for robust modular avatar support and AutoFIX resistance. Implementations leverage VRCFury's features for parameter persistence and mirror synchronization where appropriate.  See updated `PCSSLightHandler.cs` and `PCSSLight.cs` for examples incorporating MAParameter and MAMergeAnimator.  Refer to the updated `PCSSLightHandler.cs`, `PCSSLight.cs`, and `PCSSLiltoonShader.shader` files for examples incorporating MAParameter, MAMergeAnimator, and best practices for modular avatar compatibility and AutoFIX resistance.  Updated examples for modular avatar compatibility and AutoFIX resistance are now available in `PCSSLightHandler.cs`, `PCSSLight.cs`, and `PCSSLiltoonShader.shader`.  These examples incorporate MAParameter, MAMergeAnimator, and VRCFury's features for parameter persistence and mirror synchronization.  Further examples demonstrating modular avatar compatibility and AutoFIX resistance, incorporating MAParameter, MAMergeAnimator and VRCFury features, are available in `PCSSLightHandler.cs`, `PCSSLight.cs`, and `PCSSLiltoonShader.shader`.  `poissontools.cs` provides Poisson disk sampling for optimized shadow calculations. `setcameradepth.cs` manages camera depth settings for PCSS shadow rendering.
+- Refer to the `PCSSLightInstaller.cs`, `PCSSLight.cs`, `PCSSLightPlugin.cs`, and `PCSSLiltoonShader.shader` files for example implementations of modular avatar compatibility and AutoFIX resistance. These files utilize nadena.dev.modular_avatar.core and nadena.dev.ndmf for robust modular avatar support and AutoFIX resistance. Implementations leverage VRCFury's features for parameter persistence and mirror synchronization where appropriate.  `PoissonTools.cs` provides Poisson disk sampling for optimized shadow calculations. `SetCameraDepth.cs` manages camera depth settings for PCSS shadow rendering.
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 - Documentation is maintained in markdown format.
 - Version updates will be noted in the relevant sections of this file and the project README.
 - Version 1.2.0 (8k support) released (2025-04-04)
+- Version 1.2.1 (Modular Avatar & AutoFix Compatibility) released (2025-04-04)
+- Version 1.2.2 (Improved Modular Avatar & AutoFix Compatibility) released (2025-04-04)
+- Version 1.2.3 (Further Modular Avatar and AutoFix Improvements) released (2025-04-04)
+- Version 1.3.0 (Improved Modular Avatar and AutoFix Compatibility, Enhanced Performance) released (2025-04-04)
+- Version 1.3.1 (Further Modular Avatar and AutoFix Improvements, Enhanced Performance and Stability) released (2025-04-04)
+- Version 1.4.0 (Improved lilToon Integration, Enhanced Modular Avatar Support, and Additional Features) released (2025-04-04)
+- Version 1.5.0 (Improved lilToon Integration, Enhanced Modular Avatar Support, and Additional Features, Further Bug Fixes) released (2025-04-04)
+- Version 1.6.0 (Improved lilToon Integration, Enhanced Modular Avatar Support, and Additional Features, Further Bug Fixes, Enhanced Stability and Performance) released (2025-04-04)
+- Version 1.7.0 (Improved lilToon Integration, Enhanced Modular Avatar Support, Additional Features, Bug Fixes, Enhanced Stability and Performance, Comprehensive Code Refactoring) released (2025-04-04)
+
 
 ## DEBUGGING
 Standard Unity debugging techniques should be used.  Log errors and warnings to the console for easier troubleshooting.  Utilize robust error handling and logging within all scripts.

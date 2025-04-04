@@ -1,9 +1,17 @@
 using UnityEngine;
 
-public class SetCameraDepthMode : MonoBehaviour
+namespace PCSSShader.Utils
 {
-    [SerializeField]
-    private new bool enabled = true;
-
-    // ... existing code ...
+    [ExecuteInEditMode]
+    public class SetCameraDepthMode : MonoBehaviour
+    {
+        private void OnEnable()
+        {
+            var camera = GetComponent<Camera>();
+            if (camera != null)
+            {
+                camera.depthTextureMode = DepthTextureMode.Depth;
+            }
+        }
+    }
 } 
