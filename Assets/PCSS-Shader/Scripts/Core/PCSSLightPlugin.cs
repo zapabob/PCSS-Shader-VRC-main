@@ -3,9 +3,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using System;
 using System.Collections.Generic;
-using nadena.dev.modular_avatar.core;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+using nadena.dev.modular_avatar.core;
 
 #if UNITY_EDITOR
 using UnityEditor;

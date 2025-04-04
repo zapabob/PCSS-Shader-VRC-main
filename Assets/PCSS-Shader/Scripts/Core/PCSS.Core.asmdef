@@ -1,8 +1,16 @@
 {
     "name": "PCSS.Core",
+    "rootNamespace": "PCSSShader.Core",
     "references": [
+        "GUID:fe685ec1767f73d42b749ea8045bfe43",
+        "GUID:3456780c4fb2d324ab9c633d6f1b0ddb",
+        "GUID:5718fb738711cd34ea54e9553040911d",
+        "GUID:80a8b162ac804404bae7b5fdc3041428",
+        "GUID:5718fb738711cd34ea54e9553040911d",
+        "GUID:80a8b162ac804404bae7b5fdc3041428",
+        "GUID:f906c2a150fbb5f4caf3d865fb42f9b2",
+        "GUID:fc900867c0f47cd49b6e2ae4ef907300",
         "VRC.SDK3.Avatars.Components",
-        "VRC.SDKBase",
         "nadena.dev.modular-avatar.core",
         "nadena.dev.ndmf"
     ],

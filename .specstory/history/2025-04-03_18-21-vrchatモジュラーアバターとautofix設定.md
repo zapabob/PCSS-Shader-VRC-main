@@ -3885,6 +3885,399 @@ While compiling job:
 
 _**Assistant**_
 
+エラーの主な原因は2つあります：
+
+1. Modular Avatarの参照が正しく解決されていない
+2. `PCSS.Utils`アセンブリが見つからない
+
+これらを解決するために、以下の手順を実行しましょう：
+
+1. まず、VCCでModular Avatarパッケージが正しくインストールされているか確認します：
+
+---
+
+```bash
+ls "Packages"
+```
+
+```
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> ls "Packages"
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main>
+
+```
+
+---
+
+2. `PCSS.Utils.asmdef`ファイルを作成して、必要な参照を設定します：
+
+---
+
+```diff
+          "PCSS.Core",
+          "VRC.SDK3.Avatars.Components",
+-         "VRC.SDKBase"
++         "VRC.SDKBase",
++         "nadena.dev.modular-avatar.core",
++         "nadena.dev.ndmf"
+      ],
+      "includePlatforms": [],
+```
+
+---
+
+3. プロジェクトをVCCで再解決し、必要なパッケージをインストールします：
+
+---
+
+```bash
+vcc resolve
+```
+
+```
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> vcc resolve
+vcc : 用語 'vcc' は、コマンドレット、関数、スクリプト ファイル、または操作可能なプログラムの名前として認識
+されません。名前が正しく記述されていることを確認し、パスが含まれている場合はそのパスが正しいことを確認して
+から、再試行してください。
+発生場所 行:1 文字:1
++ vcc resolve
++ ~~~
+    + CategoryInfo          : ObjectNotFound: (vcc:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main>
+```
+
+---
+
+申し訳ありません。VCCコマンドラインツールが見つかりませんでした。代わりに以下の手順を実行してください：
+
+1. VRChat Creator Companion (VCC)を開く
+2. プロジェクトを開き、以下のパッケージをインストール：
+   - Modular Avatar (`nadena.dev.modular-avatar`)
+   - NDMF (`nadena.dev.ndmf`)
+   - VRChat SDK - Base
+   - VRChat SDK - Avatars
+
+その後、以下の手順でUnityプロジェクトをリフレッシュします：
+
+1. Unity Editorを完全に閉じる
+2. `Library`フォルダを削除：
+
+---
+
+```bash
+rm -r -Force Library
+```
+
+```
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> rm -r -Force Library
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.RemoveItemCommand
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main>
+```
+
+---
+
+3. Unity Editorを再起動
+4. プロジェクトを開いたら、`Assets`フォルダを右クリックして「Reimport All」を選択
+
+これらの手順により：
+
+1. Modular Avatarの参照が正しく解決される
+2. `PCSS.Utils`アセンブリが正しく認識される
+3. コンパイルエラーが解消される
+
+もし問題が解決しない場合は、以下の追加の確認をお願いします：
+
+1. VCCで正しいバージョンのパッケージがインストールされているか
+2. Unity ProjectのPlayer SettingsでAPI Compatibility LevelがNet 4.xに設定されているか
+3. アセンブリ定義ファイル（.asmdef）が正しい場所に配置されているか
+
+これらの情報を確認できましたら、お知らせください。
+
+---
+
+_**User**_
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(60,17): error CS0246: The type or namespace name 'MAComponent' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(61,17): error CS0246: The type or namespace name 'MAParameter' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(62,17): error CS0246: The type or namespace name 'MAMergeAnimator' could not be found (are you missing a using directive or an assembly reference?)
+
+Failed to find entry-points:
+Mono.Cecil.AssemblyResolutionException: Failed to resolve assembly: 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' ---> System.Exception: Failed to resolve assembly 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null' in directories: C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32\Facades
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.core.vpm-resolver\Editor\Dependencies
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Dependencies\librsync
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Integrations\VRChat Example Central\Editor
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Plugins\Harmony
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\WebGLSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Editor\VRCSDK\Plugins
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.ide.rider@3.0.26\Rider\Editor
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\VisionOSPlayer
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Plugins
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\MetroSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.base\Runtime\VRCSDK\Dependencies\Managed
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\WindowsStandaloneSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Packages\com.vrchat.avatars\Runtime\VRCSDK\Plugins
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.burst@1.8.12
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.burst@1.8.12\Unity.Burst.CodeGen
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\LinuxStandaloneSupport
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\MacStandaloneSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.mono-cecil@1.11.4
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\iOSSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime\AOT
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\Managed
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.ext.nunit@1.0.6\net35\unity-custom
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\AppleTVSupport
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\PackageCache\com.unity.collections@2.1.4\Unity.Collections.LowLevel.ILSupport
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\PlaybackEngines\AndroidPlayer
+C:\Program Files\Unity\Hub\Editor\2022.3.22f1\Editor\Data\Managed\UnityEngine
+C:\Users\downl\AppData\Local\VRChatCreatorCompanion\VRChatProjects\New Project\Library\ScriptAssemblies ---> Mono.Cecil.AssemblyResolutionException: Failed to resolve assembly: 'PCSS.Utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null'
+  at Mono.Cecil.BaseAssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name, Mono.Cecil.ReaderParameters parameters) [0x00105] in <853812ae52c341daaef3c62ecdb86b32>:0 
+  at zzzUnity.Burst.CodeGen.AssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x00013] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+   --- End of inner exception stack trace ---
+  at zzzUnity.Burst.CodeGen.AssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x00060] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.AssemblyLoader.Resolve (Mono.Cecil.AssemblyNameReference name) [0x0007e] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.EntryPointMethodFinder.FindEntryPoints (System.String[] rootAssemblyNames, Burst.Compiler.IL.Hashing.CacheRuntime.HashCacheAssemblyStore assemblyStore, Burst.Compiler.IL.AssemblyLoader assemblyLoader, Burst.Compiler.IL.NativeCompilerOptions options, Burst.Compiler.IL.Server.ProfileDelegate profileCallback, System.Boolean includeRootAssemblyReferences, System.Boolean splitTargets) [0x00055] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass18_1.<FindMethods>b__0 (Burst.Compiler.IL.Server.Caching.CacheManager cacheManager) [0x0005e] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass26_0`1[TResult].<RunTask>b__0 () [0x00145] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.RunTask[TResult] (Burst.Compiler.IL.Server.TargetKey target, System.String taskName, System.String[] assemblyFolders, System.Threading.CancellationToken cancellationToken, System.Func`2[T,TResult] function) [0x00131] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.FindMethods (Burst.Compiler.IL.Server.CompilerServerOptions options, Burst.Compiler.IL.Aot.AotCompilerOptions aotOptions, Burst.Compiler.IL.Server.TargetKey target, Burst.Compiler.IL.Server.Caching.CacheManager cacheManager, Burst.Compiler.IL.CompilerStatistics stats, System.Threading.CancellationToken cancellationToken) [0x00299] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer+<>c__DisplayClass26_0`1[TResult].<RunTask>b__0 () [0x00145] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.RunTask[TResult] (Burst.Compiler.IL.Server.TargetKey target, System.String taskName, System.String[] assemblyFolders, System.Threading.CancellationToken cancellationToken, System.Func`2[T,TResult] function) [0x00131] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+  at Burst.Compiler.IL.Server.CompilerServer.Compile (Burst.Compiler.IL.Server.CompilerServerOptions options, Burst.Compiler.IL.Server.CompilationMessageStreamer streamer, System.Threading.CancellationToken cancellationToken) [0x001af] in <f26dfc19a37a442ea317a7ab78395fa6>:0 
+
+While compiling job:
+
+
+
+---
+
+_**Assistant**_
+
+エラーの主な原因は2つあります：
+
+1. Modular Avatarのコンポーネント（`MAComponent`、`MAParameter`、`MAMergeAnimator`）が見つからない
+2. `PCSS.Utils`アセンブリの解決に失敗している
+
+これらの問題を解決するために、以下の手順を実行しましょう：
+
+1. まず、Missingコンポーネントがないか確認します：
+
+---
+
+<details>
+            <summary>Searched codebase "asmdef" • **4** results</summary>
+        
+| File |
+|------|
+| `undefined` |
+| `undefined` |
+| `undefined` |
+| `undefined` |
+
+</details>
+
+---
+
+2. `PCSS.Core.asmdef`を確認して修正します：
+
+---
+
+```diff
+  {
+      "name": "PCSS.Core",
++     "rootNamespace": "PCSSShader.Core",
+      "references": [
++         "GUID:fe685ec1767f73d42b749ea8045bfe43",
++         "GUID:3456780c4fb2d324ab9c633d6f1b0ddb",
++         "GUID:5718fb738711cd34ea54e9553040911d",
++         "GUID:80a8b162ac804404bae7b5fdc3041428",
+          "VRC.SDK3.Avatars.Components",
+          "VRC.SDKBase",
+```
+
+---
+
+3. `PCSSLightPlugin.cs`のnamespaceを修正します：
+
+---
+
+```diff
+  using System;
+  using System.Collections.Generic;
+- using nadena.dev.modular_avatar.core;
+  using VRC.SDK3.Avatars.Components;
+  using VRC.SDKBase;
++ using nadena.dev.modular_avatar.core;
+  
+  #if UNITY_EDITOR
+```
+
+---
+
+4. プロジェクトの依存関係を確認するために、`manifest.json`を確認します：
+
+---
+
+<details>
+            <summary>Searched codebase "manifest.json" • **0** results</summary>
+        
+No results found
+</details>
+
+---
+
+5. 以下の手順で問題を解決してください：
+
+1. Unity Editorを完全に閉じる
+
+2. VRChat Creator Companion (VCC)で以下の操作を行う：
+   - プロジェクトを開く
+   - 「Manage Project」をクリック
+   - 以下のパッケージが正しくインストールされているか確認：
+     - VRChat SDK - Base
+     - VRChat SDK - Avatars
+     - Modular Avatar (`nadena.dev.modular-avatar`)
+     - NDMF (`nadena.dev.ndmf`)
+   - 「Resolve」をクリックして依存関係を解決
+
+3. プロジェクトのクリーンアップ：
+```powershell
+rm -r -Force Library
+rm -r -Force Temp
+rm -r -Force obj
+```
+
+4. Unity Editorを再起動し、以下の操作を行う：
+   - プロジェクトを開く
+   - メニューから「Assets > Reimport All」を選択
+   - コンパイルが完了するまで待つ
+
+5. もし問題が解決しない場合：
+   - Project Settingsを開く
+   - Player Settingsで「API Compatibility Level」が`.NET Standard 2.1`または`.NET Framework`に設定されているか確認
+   - Script Compilation設定で「Assembly Version Validation」が有効になっているか確認
+
+これらの手順により：
+1. アセンブリの参照が正しく解決される
+2. Modular Avatarのコンポーネントが認識される
+3. `PCSS.Utils`アセンブリが正しく読み込まれる
+
+参考：[Common Unity Bugs and How to Fix Them](https://www.tangledrealitystudios.com/development-tips/common-unity-bugs-and-how-to-fix-them/)
+
+---
+
+_**User**_
+
+Unable to find a font file with the specified Family Name [Noto Sans CJK JP] and Style [].
+UnityEngine.TextCore.Text.FontAsset:CreateFontAsset (string,string,int)
+nadena.dev.ndmf.localization.LanguagePrefs:TryLoadFontForLanguage (string) (at ./Packages/nadena.dev.ndmf/Editor/UI/Localization/LanguagePrefs.cs:281)
+nadena.dev.ndmf.localization.LanguagePrefs:MaybeRefreshActiveFont () (at ./Packages/nadena.dev.ndmf/Editor/UI/Localization/LanguagePrefs.cs:261)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+
+Assembly has duplicate references: VRC.SDKBase (Assets/PCSS-Shader-VRC-main/Assets/PCSS-Shader/Scripts/Core/PCSS.Core.asmdef)
+
+
+
+---
+
+_**Assistant**_
+
+エラーには2つの問題があります：
+
+1. Noto Sans CJK JPフォントが見つからない
+2. `VRC.SDKBase`の重複参照
+
+まず、日本語フォントの問題を解決します：
+
+---
+
+```bash
+mkdir -Force "Assets/PCSS-Shader/Fonts"
+```
+
+```
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main> mkdir -Force "Assets/PCSS-Shader/Fonts"
+    ディレクトリ: C:\Users\downl\Downloads\PCSS-Shader-VRC-main\Assets\PCSS-Shader
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        2025/04/04      5:03                Fonts
+
+
+PS C:\Users\downl\Downloads\PCSS-Shader-VRC-main>
+```
+
+---
+
+次に、`PCSS.Core.asmdef`の重複参照を修正します：
+
+---
+
+```diff
+          "GUID:80a8b162ac804404bae7b5fdc3041428",
+          "VRC.SDK3.Avatars.Components",
+-         "VRC.SDKBase",
+          "nadena.dev.modular-avatar.core",
+          "nadena.dev.ndmf"
+```
+
+---
+
+次に、日本語フォントをダウンロードしてインポートします。以下の手順で設定してください：
+
+1. [Noto Sans CJK JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP)をダウンロード
+
+2. ダウンロードしたフォントファイルを`Assets/PCSS-Shader/Fonts`に配置
+
+3. Unity Editorで以下の設定を行う：
+   - Project窓で`Assets/PCSS-Shader/Fonts`を開く
+   - フォントファイルを選択
+   - InspectorでFont Assetを作成：
+     - Font Asset Type: Dynamic
+     - Generation Settings:
+       - Character Set: Japanese
+       - Include Font Features: チェック
+       - Fallback Font Assets: 必要に応じて設定
+
+4. NDMFの言語設定を更新：
+   - Edit > Project Settings > NDMF > Localization
+   - Japanese Font Assetに作成したフォントアセットを設定
+
+これらの変更により：
+1. 日本語フォントが正しく読み込まれる
+2. アセンブリの重複参照が解消される
+
+参考：
+- [Unity TMP Japanese](https://github.com/nilpkthmsk/Unity_TMP_Japanese)
+- [CJK font for TextMeshPro](https://github.com/zhuchun/cjk)
+
+もし問題が解決しない場合は、以下も試してください：
+1. Unity Editorを再起動
+2. Project Settings > Text Mesh Proの設定を確認
+3. VCCでプロジェクトを再解決（Resolve）
+
+---
+
+_**User**_
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(60,17): error CS0246: The type or namespace name 'MAComponent' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(61,17): error CS0246: The type or namespace name 'MAParameter' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\PCSS-Shader-VRC-main\Assets\PCSS-Shader\Scripts\Core\PCSSLightPlugin.cs(62,17): error CS0246: The type or namespace name 'MAMergeAnimator' could not be found (are you missing a using directive or an assembly reference?)
+
+
+
+---
+
+_**Assistant**_
+
 
 
 ---

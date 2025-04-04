@@ -1,10 +1,6 @@
----
-description: Cursor rules derived by SpecStory from the project AI interaction history
-globs: *
----
 
 ## PROJECT OVERVIEW
-This project aims to develop a high-quality PCSS shader for VRChat, compatible with modular avatars and resistant to AutoFIX removal.  The shader will provide improved lighting and shadows within the VRChat environment.  The shader must be compatible with VRCFury's auto-correction features. The shader must maintain functionality even when the avatar is rebuilt.  The project incorporates nadena.dev.modular_avatar.core and nadena.dev.ndmf for robust modular avatar support and AutoFIX resistance, leveraging VRCFury's features for parameter persistence and mirror synchronization where appropriate.  The project structure is organized to improve maintainability and follow Unity best practices.  All scripts must be designed to work seamlessly with modular avatars and resist removal by VRChat's AutoFIX feature. Implementations should leverage VRCFury's features for parameter persistence and mirror synchronization.
+This project aims to develop a high-quality PCSS shader for VRChat, compatible with modular avatars and resistant to AutoFIX removal.  The shader will provide improved lighting and shadows within the VRChat environment.  The shader must be compatible with VRCFury's auto-correction features. The shader must maintain functionality even when the avatar is rebuilt.  The project incorporates nadena.dev.modular_avatar.core and nadena.dev.ndmf for robust modular avatar support and AutoFIX resistance, leveraging VRCFury's features for parameter persistence and mirror synchronization where appropriate.
 
 ## CODE STYLE
 Adhere to C# coding conventions.  Maintain consistent indentation and naming conventions.
@@ -55,14 +51,13 @@ This structure groups related files logically, clarifies dependencies, simplifie
 - Releases should be versioned and documented.
 
 ## REFERENCE EXAMPLES
-- Refer to the `PCSSLightInstaller.cs`, `PCSSLight.cs`, `PCSSLightPlugin.cs`, and `PCSSLiltoonShader.shader` files for example implementations of modular avatar compatibility and AutoFIX resistance. These files utilize nadena.dev.modular_avatar.core and nadena.dev.ndmf for robust modular avatar support and AutoFIX resistance. Implementations leverage VRCFury's features for parameter persistence and mirror synchronization where appropriate.  `PoissonTools.cs` provides Poisson disk sampling for optimized shadow calculations. `SetCameraDepth.cs` manages camera depth settings for PCSS shadow rendering.
+- Refer to the `PCSSLightInstaller.cs`, `PCSSLight.cs`, and `PCSSLiltoonShader.shader` files for example implementations of modular avatar compatibility and AutoFIX resistance. These files utilize nadena.dev.modular_avatar.core and nadena.dev.ndmf for robust modular avatar support and AutoFIX resistance. Implementations leverage VRCFury's features for parameter persistence and mirror synchronization where appropriate.  `PoissonTools.cs` provides Poisson disk sampling for optimized shadow calculations. `SetCameraDepth.cs` manages camera depth settings for PCSS shadow rendering.
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 - Documentation is maintained in markdown format.
 - Version updates will be noted in the relevant sections of this file and the project README.
 - Version 1.2.0 (8k support) released (2025-04-04)
 - Version 1.2.1 (Modular Avatar & AutoFix Compatibility) released (2025-04-04)
-- Version 1.2.2 (Improved Modular Avatar & AutoFix Compatibility) released (2025-04-04)
 
 ## DEBUGGING
 Standard Unity debugging techniques should be used.  Log errors and warnings to the console for easier troubleshooting.  Utilize robust error handling and logging within all scripts.
