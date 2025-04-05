@@ -19,6 +19,9 @@ namespace PCSS.Core
         private const string PCSS_INTENSITY_PARAM = PCSS_PARAM_PREFIX + "Intensity";
         private const string PCSS_SOFTNESS_PARAM = PCSS_PARAM_PREFIX + "Softness";
 
+        // AutoFIX対策のための追加パラメータ
+        private const string PCSS_AUTOFIX_RESISTANCE_KEY = "_PCSSAutoFixResistance";
+
         [Header("シャドウ設定")]
         public int resolution = 4096;
         public bool customShadowResolution = false;
@@ -201,6 +204,9 @@ namespace PCSS.Core
                     Shader.SetGlobalFloat(PCSS_ENABLED_PARAM, 1f);
                     Shader.SetGlobalFloat(PCSS_INTENSITY_PARAM, 1f);
                     Shader.SetGlobalFloat(PCSS_SOFTNESS_PARAM, Softness);
+                    
+                    // AutoFIX耐性のためのグローバル変数
+                    Shader.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1f);
 
                     _isVRCFuryInitialized = true;
                     Debug.Log("VRCFury compatibility initialized successfully.", this);
@@ -267,6 +273,7 @@ namespace PCSS.Core
                     Shader.SetGlobalFloat(PCSS_ENABLED_PARAM, enabled ? 1f : 0f);
                     Shader.SetGlobalFloat(PCSS_INTENSITY_PARAM, lightComponent ? lightComponent.intensity : 0f);
                     Shader.SetGlobalFloat(PCSS_SOFTNESS_PARAM, Softness);
+                    Shader.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1f);
                 }
 
                 Shader.SetGlobalInt("Blocker_Samples", Blocker_SampleCount);
@@ -364,6 +371,9 @@ namespace PCSS.Core
                 Setup();
             }
             UpdateShaderValues();
+            
+            // OnEnableでも確実にコマンドバッファを設定
+            SetupCommandBuffer();
         }
 
         private void OnDisable()
@@ -419,6 +429,22 @@ namespace PCSS.Core
 
             copyShadowBuffer = new CommandBuffer();
             copyShadowBuffer.name = "PCSS Shadows";
+            
+            // AutoFIX耐性を高めるためのコマンド追加
+            copyShadowBuffer.EnableShaderKeyword("_PCSS_ON");
+            copyShadowBuffer.SetGlobalFloat(PCSS_ENABLED_PARAM, 1f);
+            copyShadowBuffer.SetGlobalFloat(PCSS_INTENSITY_PARAM, lightComponent ? lightComponent.intensity : 1f);
+            copyShadowBuffer.SetGlobalFloat(PCSS_SOFTNESS_PARAM, Softness);
+            copyShadowBuffer.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1f);
+            
+            // シャドウマップの保存
+            if (shadowRenderTexture != null)
+            {
+                copyShadowBuffer.SetShadowSamplingMode(BuiltinRenderTextureType.CurrentActive, ShadowSamplingMode.RawDepth);
+                copyShadowBuffer.Blit(BuiltinRenderTextureType.CurrentActive, new RenderTargetIdentifier(shadowRenderTexture));
+                copyShadowBuffer.SetGlobalTexture(shadowmapPropID, new RenderTargetIdentifier(shadowRenderTexture));
+            }
+            
             lightComponent.AddCommandBuffer(lightEvent, copyShadowBuffer);
         }
 

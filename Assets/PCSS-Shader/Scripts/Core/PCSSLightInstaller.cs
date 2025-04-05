@@ -18,6 +18,10 @@ namespace PCSS.Core
         private const string PCSS_PARAM_PREFIX = "PCSS_";
         private const string PCSS_ENABLED_PARAM = PCSS_PARAM_PREFIX + "Enabled";
         private const string PCSS_INTENSITY_PARAM = PCSS_PARAM_PREFIX + "Intensity";
+        
+        // AutoFIX対策のための追加パラメータ
+        private const string PCSS_AUTOFIX_RESISTANCE_KEY = "_PCSSAutoFixResistance";
+        private const string PCSS_SHADER_KEYWORD = "_PCSS_ON";
 
         [SerializeField, Range(0f, 1f)]
         private float _defaultIntensity = 1f;
@@ -121,7 +125,7 @@ namespace PCSS.Core
         {
             try
             {
-                var avatar = GetComponent<VRCAvatarDescriptor>();
+                var avatar = GetComponentInParent<VRCAvatarDescriptor>();
                 if (avatar != null)
                 {
                     // パラメータの永続性を確保
@@ -131,12 +135,16 @@ namespace PCSS.Core
                     plugin.SetParameterValue(_toggleParameterName, 1f);
 
                     // シェーダーキーワードの設定
-                    Shader.EnableKeyword("_PCSS_ON");
+                    Shader.EnableKeyword(PCSS_SHADER_KEYWORD);
                     Shader.SetGlobalFloat("_PCSSEnabled", 1f);
                     Shader.SetGlobalFloat("_PCSSIntensity", _defaultIntensity);
+                    Shader.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1f);
 
                     // VRCFuryのパラメータ設定
                     SetupToggleParameter();
+                    
+                    // コマンドバッファを使ったAutoFIX耐性の設定
+                    SetupAutoFixResistance();
                 }
             }
             catch (System.Exception ex)
@@ -145,12 +153,42 @@ namespace PCSS.Core
             }
         }
 
+        // AutoFIX耐性のための追加設定
+        private void SetupAutoFixResistance()
+        {
+            try
+            {
+                if (_light != null && _pcssLight != null)
+                {
+                    // コマンドバッファの設定
+                    CommandBuffer commandBuffer = new CommandBuffer();
+                    commandBuffer.name = "PCSS AutoFix Resistance";
+                    
+                    // シェーダーキーワードと重要なグローバル変数をコマンドバッファに追加
+                    commandBuffer.EnableShaderKeyword(PCSS_SHADER_KEYWORD);
+                    commandBuffer.SetGlobalFloat(PCSS_ENABLED_PARAM, 1f);
+                    commandBuffer.SetGlobalFloat(PCSS_INTENSITY_PARAM, _defaultIntensity);
+                    commandBuffer.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1f);
+                    
+                    // ライトイベントにコマンドバッファを追加
+                    _light.AddCommandBuffer(LightEvent.BeforeScreenspaceMask, commandBuffer);
+                    _light.AddCommandBuffer(LightEvent.AfterShadowMap, commandBuffer);
+                    
+                    Debug.Log("PCSS AutoFix resistance setup complete.", this);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Error setting up AutoFix resistance: {ex.Message}\nStackTrace: {ex.StackTrace}");
+            }
+        }
+
         private void SetupToggleParameter()
         {
 #if UNITY_EDITOR
             try
             {
-                var avatar = GetComponent<VRCAvatarDescriptor>();
+                var avatar = GetComponentInParent<VRCAvatarDescriptor>();
                 if (avatar != null && avatar.expressionParameters != null)
                 {
                     _expressionParameters = avatar.expressionParameters;
@@ -161,26 +199,76 @@ namespace PCSS.Core
                         name = _toggleParameterName,
                         valueType = VRCExpressionParameters.ValueType.Bool,
                         defaultValue = 1f,
-                        saved = true
+                        saved = true  // パラメータを保存して永続化
+                    };
+
+                    // AutoFIX耐性のためのパラメータを追加
+                    var pcssEnabledParam = new VRCExpressionParameters.Parameter
+                    {
+                        name = PCSS_ENABLED_PARAM,
+                        valueType = VRCExpressionParameters.ValueType.Bool,
+                        defaultValue = 1f,
+                        saved = true  // パラメータを保存して永続化
+                    };
+
+                    var pcssIntensityParam = new VRCExpressionParameters.Parameter
+                    {
+                        name = PCSS_INTENSITY_PARAM,
+                        valueType = VRCExpressionParameters.ValueType.Float,
+                        defaultValue = _defaultIntensity,
+                        saved = true  // パラメータを保存して永続化
                     };
 
                     // 既存のパラメータをチェック
-                    bool paramExists = false;
+                    bool toggleExists = false;
+                    bool pcssEnabledExists = false;
+                    bool pcssIntensityExists = false;
+                    
                     for (int i = 0; i < _expressionParameters.parameters.Length; i++)
                     {
                         if (_expressionParameters.parameters[i].name == _toggleParameterName)
                         {
-                            paramExists = true;
-                            break;
+                            toggleExists = true;
+                        }
+                        if (_expressionParameters.parameters[i].name == PCSS_ENABLED_PARAM)
+                        {
+                            pcssEnabledExists = true;
+                        }
+                        if (_expressionParameters.parameters[i].name == PCSS_INTENSITY_PARAM)
+                        {
+                            pcssIntensityExists = true;
                         }
                     }
 
+                    // 新しいパラメータの数を計算
+                    int newParamCount = _expressionParameters.parameters.Length;
+                    if (!toggleExists) newParamCount++;
+                    if (!pcssEnabledExists) newParamCount++;
+                    if (!pcssIntensityExists) newParamCount++;
+                    
                     // パラメータが存在しない場合は追加
-                    if (!paramExists)
+                    if (!toggleExists || !pcssEnabledExists || !pcssIntensityExists)
                     {
-                        var newParams = new VRCExpressionParameters.Parameter[_expressionParameters.parameters.Length + 1];
+                        var newParams = new VRCExpressionParameters.Parameter[newParamCount];
                         System.Array.Copy(_expressionParameters.parameters, newParams, _expressionParameters.parameters.Length);
-                        newParams[newParams.Length - 1] = param;
+                        
+                        int index = _expressionParameters.parameters.Length;
+                        
+                        if (!toggleExists)
+                        {
+                            newParams[index++] = param;
+                        }
+                        
+                        if (!pcssEnabledExists)
+                        {
+                            newParams[index++] = pcssEnabledParam;
+                        }
+                        
+                        if (!pcssIntensityExists)
+                        {
+                            newParams[index++] = pcssIntensityParam;
+                        }
+                        
                         _expressionParameters.parameters = newParams;
                         UnityEditor.EditorUtility.SetDirty(_expressionParameters);
                     }
@@ -298,18 +386,27 @@ namespace PCSS.Core
                 if (_pcssLight != null)
                 {
                     // シェーダーキーワードとパラメータの整合性チェック
-                    bool isEnabled = Shader.IsKeywordEnabled("_PCSS_ON");
+                    bool isEnabled = Shader.IsKeywordEnabled(PCSS_SHADER_KEYWORD);
                     float intensity = Shader.GetGlobalFloat("_PCSSIntensity");
                     float toggleValue = _pcssLight.GetParameterValue(_toggleParameterName);
+                    float autoFixResistance = Shader.GetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY);
 
                     if (!isEnabled)
                     {
                         Debug.LogWarning("PCSSシェーダーキーワードが無効です。VRCFuryの自動修正により無効化された可能性があります。");
+                        Shader.EnableKeyword(PCSS_SHADER_KEYWORD);
                     }
 
                     if (Mathf.Approximately(intensity, 0f))
                     {
                         Debug.LogWarning("PCSSの強度が0に設定されています。VRCFuryの自動修正により変更された可能性があります。");
+                        Shader.SetGlobalFloat("_PCSSIntensity", _defaultIntensity);
+                    }
+                    
+                    if (autoFixResistance < 0.5f)
+                    {
+                        Debug.LogWarning("PCSS AutoFix耐性が無効化されています。AutoFIXにより変更された可能性があります。");
+                        Shader.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1f);
                     }
 
                     // ライトの状態を同期

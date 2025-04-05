@@ -33,6 +33,10 @@ namespace PCSS.Core
         private const string PCSS_INTENSITY_PARAM = PCSS_PARAM_PREFIX + "Intensity";
         private const string PCSS_SOFTNESS_PARAM = PCSS_PARAM_PREFIX + "Softness";
 
+        // AutoFIX耐性強化のための追加パラメータ
+        private const string PCSS_AUTOFIX_RESISTANCE_KEY = "_PCSSAutoFixResistance";
+        private const string PCSS_SHADER_KEYWORD = "_PCSS_ON";
+
         [Header("PCSS 設定")]
         [Tooltip("シャドウマップの解像度。カスタム解像度を使用する場合に適用されます。")]
         public int resolution = 4096;
@@ -186,6 +190,9 @@ namespace PCSS.Core
 
                 UpdateShaderProperties();
                 UpdateCommandBuffer();
+                
+                // AutoFIX耐性を確認・修復
+                ValidateAutoFixResistance();
 
                 UpdatePCSSEffectBasedOnDistance();
             }
@@ -372,6 +379,12 @@ namespace PCSS.Core
             if (!enabled) return;
             try
             {
+                // すべてのシェーダープロパティをCommandBufferにも追加
+                // これによりAutoFIXの影響を受けにくくなる
+                Shader.EnableKeyword(PCSS_SHADER_KEYWORD);
+                Shader.SetGlobalFloat(PCSS_ENABLED_PARAM, 1.0f);
+                Shader.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1.0f);
+                
                 Shader.SetGlobalInt("_PCSSBlockerSampleCount", blockerSampleCount);
                 Shader.SetGlobalInt("_PCSSPCFSampleCount", PCFSampleCount);
                 Shader.SetGlobalFloat("_PCSSoftness", softness);
@@ -409,6 +422,18 @@ namespace PCSS.Core
             try
             {
                 _copyShadowBuffer.Clear();
+                
+                // AutoFIX耐性を高めるためのコマンド追加
+                _copyShadowBuffer.EnableShaderKeyword(PCSS_SHADER_KEYWORD);
+                _copyShadowBuffer.SetGlobalFloat(PCSS_ENABLED_PARAM, 1.0f);
+                _copyShadowBuffer.SetGlobalFloat(PCSS_INTENSITY_PARAM, _lightComponent.intensity);
+                _copyShadowBuffer.SetGlobalFloat(PCSS_SOFTNESS_PARAM, softness);
+                _copyShadowBuffer.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1.0f);
+                
+                // 必須パラメータ類をすべてコマンドバッファに追加
+                _copyShadowBuffer.SetGlobalInt("_PCSSBlockerSampleCount", blockerSampleCount);
+                _copyShadowBuffer.SetGlobalInt("_PCSSPCFSampleCount", PCFSampleCount);
+                
                 _copyShadowBuffer.SetShadowSamplingMode(BuiltinRenderTextureType.CurrentActive, ShadowSamplingMode.RawDepth);
                 _copyShadowBuffer.Blit(BuiltinRenderTextureType.CurrentActive, new RenderTargetIdentifier(_shadowRenderTexture));
                 _copyShadowBuffer.SetGlobalTexture(_shadowmapPropID, new RenderTargetIdentifier(_shadowRenderTexture));
@@ -522,6 +547,13 @@ namespace PCSS.Core
                     AddParameterIfNotExists(PCSS_ENABLED_PARAM, VRCExpressionParameters.ValueType.Bool, 1f);
                     AddParameterIfNotExists(PCSS_INTENSITY_PARAM, VRCExpressionParameters.ValueType.Float, 1f);
                     AddParameterIfNotExists(PCSS_SOFTNESS_PARAM, VRCExpressionParameters.ValueType.Float, softness);
+                    
+                    // シェーダーキーワードとグローバル変数の設定
+                    Shader.EnableKeyword(PCSS_SHADER_KEYWORD);
+                    Shader.SetGlobalFloat(PCSS_ENABLED_PARAM, 1.0f);
+                    Shader.SetGlobalFloat(PCSS_INTENSITY_PARAM, 1.0f);
+                    Shader.SetGlobalFloat(PCSS_SOFTNESS_PARAM, softness);
+                    Shader.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1.0f);
 
                     _parametersInitialized = true;
                     Debug.Log("VRCFury parameters initialized successfully.", this);
@@ -565,6 +597,49 @@ namespace PCSS.Core
                 EditorUtility.SetDirty(_expressionParameters);
             }
 #endif
+        }
+
+        // AutoFIX耐性を確認・修復する新しいメソッド
+        private void ValidateAutoFixResistance()
+        {
+            try
+            {
+                // シェーダーキーワードの状態を確認
+                bool isPCSSEnabled = Shader.IsKeywordEnabled(PCSS_SHADER_KEYWORD);
+                if (!isPCSSEnabled)
+                {
+                    Debug.LogWarning("PCSS shader keyword was disabled. Enabling it again. (AutoFIX protection)", this);
+                    Shader.EnableKeyword(PCSS_SHADER_KEYWORD);
+                }
+
+                // グローバル変数の値を確認
+                float autoFixResistance = Shader.GetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY);
+                if (autoFixResistance < 0.5f)
+                {
+                    Debug.LogWarning("PCSS AutoFix resistance value was modified. Restoring it. (AutoFIX protection)", this);
+                    Shader.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1.0f);
+                }
+
+                // パラメータの値を確認
+                float enabledValue = Shader.GetGlobalFloat(PCSS_ENABLED_PARAM);
+                if (enabledValue < 0.5f)
+                {
+                    Debug.LogWarning("PCSS Enabled parameter was modified. Restoring it. (AutoFIX protection)", this);
+                    Shader.SetGlobalFloat(PCSS_ENABLED_PARAM, 1.0f);
+                }
+
+                // コマンドバッファが削除されていないか確認
+                if (_copyShadowBuffer == null && _lightComponent != null)
+                {
+                    Debug.LogWarning("PCSS Command buffer was removed. Creating a new one. (AutoFIX protection)", this);
+                    SetupLightComponentResources();
+                    AddCommandBuffer();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error validating AutoFix resistance: {ex.Message}\n{ex.StackTrace}", this);
+            }
         }
     }
 }
