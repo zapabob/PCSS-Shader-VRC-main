@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace PCSS.Core
 {
@@ -18,9 +19,13 @@ namespace PCSS.Core
         private const string PCSS_ENABLED_PARAM = PCSS_PARAM_PREFIX + "Enabled";
         private const string PCSS_INTENSITY_PARAM = PCSS_PARAM_PREFIX + "Intensity";
         private const string PCSS_SOFTNESS_PARAM = PCSS_PARAM_PREFIX + "Softness";
-
-        // AutoFIX対策のための追加パラメータ
         private const string PCSS_AUTOFIX_RESISTANCE_KEY = "_PCSSAutoFixResistance";
+
+        [Header("VRChat設定")]
+        [Tooltip("VRChatのAutoFix機能による削除を防ぐ")]
+        public bool preserveOnAutoFix = true;
+        [Tooltip("ミラー内での表示を最適化")]
+        public bool optimizeForMirror = true;
 
         [Header("シャドウ設定")]
         public int resolution = 4096;
@@ -207,6 +212,27 @@ namespace PCSS.Core
                     
                     // AutoFIX耐性のためのグローバル変数
                     Shader.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1f);
+
+                    // VRChat Expression Parametersの設定
+                    if (preserveOnAutoFix)
+                    {
+                        var expressionParams = _avatarDescriptor.GetComponent<VRCExpressionParameters>();
+                        if (expressionParams == null)
+                        {
+                            expressionParams = _avatarDescriptor.gameObject.AddComponent<VRCExpressionParameters>();
+                        }
+
+                        // パラメータの追加
+                        var parameters = new List<VRCExpressionParameters.Parameter>(expressionParams.parameters);
+                        parameters.Add(new VRCExpressionParameters.Parameter
+                        {
+                            name = PCSS_ENABLED_PARAM,
+                            valueType = VRCExpressionParameters.ValueType.Bool,
+                            defaultValue = 1,
+                            saved = true
+                        });
+                        expressionParams.parameters = parameters.ToArray();
+                    }
 
                     _isVRCFuryInitialized = true;
                     Debug.Log("VRCFury compatibility initialized successfully.", this);
@@ -436,6 +462,12 @@ namespace PCSS.Core
             copyShadowBuffer.SetGlobalFloat(PCSS_INTENSITY_PARAM, lightComponent ? lightComponent.intensity : 1f);
             copyShadowBuffer.SetGlobalFloat(PCSS_SOFTNESS_PARAM, Softness);
             copyShadowBuffer.SetGlobalFloat(PCSS_AUTOFIX_RESISTANCE_KEY, 1f);
+
+            // CommandBufferを使用してシャドウマップを保護
+            if (preserveOnAutoFix)
+            {
+                copyShadowBuffer.IssuePluginEvent(GetUnityPluginID(), 0);
+            }
             
             // シャドウマップの保存
             if (shadowRenderTexture != null)
